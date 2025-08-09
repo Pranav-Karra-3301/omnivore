@@ -1,0 +1,49 @@
+site_name: Omnivore
+site_description: Universal Rust Web Crawler & Knowledge Graph Builder
+site_url: https://omnivore.readthedocs.io
+repo_url: https://github.com/yourusername/omnivore
+repo_name: yourusername/omnivore
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.expand
+    - navigation.sections
+    - search.highlight
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - def_list
+  - footnotes
+  - codehilite
+nav:
+  - Overview: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+  - CLI: cli.md
+  - Configuration: configuration.md
+  - API:
+      - REST: api/rest.md
+      - GraphQL: api/graphql.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Crawler: architecture/crawler.md
+      - Parser: architecture/parser.md
+      - Knowledge Graph: architecture/knowledge-graph.md
+      - Storage: architecture/storage.md
+  - Guides:
+      - Writing Extractors: guides/extractors.md
+      - Politeness & robots.txt: guides/politeness.md
+  - Deployment:
+      - Docker: deployment/docker.md
+      - Homebrew: deployment/homebrew.md
+  - Development:
+      - Build & Test: development/build.md
+      - Contributing: development/contributing.md
+  - Examples:
+      - Basic Crawl: examples/basic-crawl.md
+  - Tutorials:
+      - Build a Graph from a Site: tutorials/graph-from-site.md

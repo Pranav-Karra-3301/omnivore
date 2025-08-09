@@ -14,7 +14,7 @@ import {
   Users,
   Rocket
 } from 'lucide-react'
-import Image from 'next/image'
+import CodeBlock from '@/components/CodeBlock'
 
 export default function HomePage() {
   return (
@@ -65,7 +65,7 @@ export default function HomePage() {
           <div className="text-center">
             <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mb-6">
               <Rocket className="w-4 h-4" />
-              <span>v1.0.0 - Production Ready</span>
+              <span>v0.1.0 - Beta</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Universal Web Crawler &<br />
@@ -74,7 +74,7 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              High-performance, parallel web crawler and knowledge graph system built in Rust. 
+              High-performance, parallel web crawler and knowledge graph system built in Rust. Open source and community-driven. 
               Extract, analyze, and graph data from the web at scale with intelligent processing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -103,22 +103,7 @@ export default function HomePage() {
             </div>
           </div>
           
-          {/* Demo Terminal Snippet */}
-          <div className="mt-16 max-w-4xl mx-auto">
-            <div className="bg-gray-900 rounded-xl p-8 shadow-2xl">
-              <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-400 ml-4">Terminal</span>
-                </div>
-                <div className="text-green-400">
-                  <p>$ omnivore crawl https://example.com --workers 10 --depth 5</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Simple, functional intro: no demo window */}
         </div>
       </section>
 
@@ -220,32 +205,32 @@ export default function HomePage() {
               <span className="text-sm font-medium text-gray-600">Rust</span>
             </div>
             
-            <div className="flex flex-col items-center space-y-2">
+            <a href="https://tokio.rs/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
               <img 
-                src="https://raw.githubusercontent.com/tokio-rs/website/master/public/img/tokio.svg"
+                src="https://tokio.rs/img/icons/tokio.svg"
                 alt="Tokio"
                 className="w-12 h-12"
               />
               <span className="text-sm font-medium text-gray-600">Tokio</span>
-            </div>
+            </a>
 
-            <div className="flex flex-col items-center space-y-2">
+            <a href="https://docs.rs/reqwest" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
               <img 
-                src="https://raw.githubusercontent.com/seanmonstar/reqwest/master/assets/reqwest.png"
-                alt="Reqwest"
+                src="https://raw.githubusercontent.com/rust-lang/rust-artwork/master/logo/rust-logo-64x64.png"
+                alt="Reqwest (Rust)"
                 className="w-12 h-12"
               />
               <span className="text-sm font-medium text-gray-600">Reqwest</span>
-            </div>
+            </a>
 
-            <div className="flex flex-col items-center space-y-2">
+            <a href="https://serde.rs" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
               <img 
-                src="https://raw.githubusercontent.com/serde-rs/serde/master/serde-logo.png"
-                alt="Serde"
+                src="https://raw.githubusercontent.com/rust-lang/rust-artwork/master/logo/rust-logo-64x64.png"
+                alt="Serde (Rust)"
                 className="w-12 h-12"
               />
               <span className="text-sm font-medium text-gray-600">Serde</span>
-            </div>
+            </a>
 
             <div className="flex flex-col items-center space-y-2">
               <img 
@@ -268,72 +253,81 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Start Section */}
+      {/* Installation Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Get Started in Minutes
+              Install Omnivore
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Install Omnivore and start crawling immediately
+              Choose your preferred method. Copy, paste, and run.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="w-8 h-8 text-blue-600" />
+          {/* Three installation methods - stacked */}
+          <div className="space-y-10">
+            <div className="text-left">
+              <div className="flex items-center mb-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <Download className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Homebrew</h3>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">1. Install</h3>
-              <div className="bg-gray-900 rounded-lg p-4 text-left">
-                <code className="text-green-400 font-mono text-sm">
-                  # Homebrew<br />
-                  brew install omnivore<br /><br />
-                  # From source<br />
-                  cargo install omnivore-cli
-                </code>
-              </div>
+              <CodeBlock language="bash">{`brew tap Pranav-Karra-3301/omnivore
+brew install omnivore`}</CodeBlock>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-8 h-8 text-green-600" />
+            <div className="text-left">
+              <div className="flex items-center mb-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <Network className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Docker</h3>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">2. Configure</h3>
-              <div className="bg-gray-900 rounded-lg p-4 text-left">
-                <code className="text-green-400 font-mono text-sm">
-                  # Basic crawl<br />
-                  omnivore crawl https://example.com<br /><br />
-                  # Advanced options<br />
-                  omnivore crawl --workers 10 --depth 5
-                </code>
-              </div>
+              <CodeBlock language="bash">{`# Run CLI
+docker run --rm -it omnivore:latest omnivore --help
+
+# With persistent data
+docker run --rm -v $(pwd)/data:/var/lib/omnivore omnivore:latest`}</CodeBlock>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Network className="w-8 h-8 text-purple-600" />
+            <div className="text-left">
+              <div className="flex items-center mb-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <Zap className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">From Source</h3>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">3. Analyze</h3>
-              <div className="bg-gray-900 rounded-lg p-4 text-left">
-                <code className="text-green-400 font-mono text-sm">
-                  # Build knowledge graph
-                  <br />
-                  omnivore graph data.json
-                </code>
-              </div>
+              <CodeBlock language="bash">{`git clone https://github.com/Pranav-Karra-3301/omnivore.git
+cd omnivore
+cargo install --path omnivore-cli --force`}</CodeBlock>
             </div>
           </div>
 
-          <div className="text-center mt-12">
-            <Link
-              href="/docs/quickstart"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              View Full Guide
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
+          {/* Usage examples */}
+          <div className="mt-16">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-semibold text-gray-900">Use Omnivore</h3>
+              <p className="text-gray-600">Copy these commands to get going fast.</p>
+            </div>
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">First crawl</h4>
+                <CodeBlock language="bash">{`omnivore crawl https://example.com --workers 5 --depth 3`}</CodeBlock>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Build knowledge graph</h4>
+                <CodeBlock language="bash">{`omnivore graph results.json --output knowledge-graph.db`}</CodeBlock>
+              </div>
+            </div>
+
+            <div className="text-center mt-10">
+              <Link href="/docs/quickstart" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                View Full Guide
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

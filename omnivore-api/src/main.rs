@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
-use async_graphql_axum::GraphQL;
+
 use axum::{
     extract::State,
     http::StatusCode,

@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use crate::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 

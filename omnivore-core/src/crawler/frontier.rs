@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use crate::Result;
 use priority_queue::PriorityQueue;
 use std::collections::HashSet;
 use url::Url;

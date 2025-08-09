@@ -2,7 +2,6 @@ pub mod embeddings;
 pub mod entity;
 pub mod relations;
 
-use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

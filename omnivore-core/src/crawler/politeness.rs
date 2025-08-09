@@ -60,7 +60,7 @@ impl PolitenessEngine {
             .clone()
     }
 
-    pub fn update_delay(&mut self, domain: &str, delay_ms: u64) {
+    pub fn update_delay(&mut self, _domain: &str, delay_ms: u64) {
         self.config.default_delay_ms = delay_ms;
     }
 }

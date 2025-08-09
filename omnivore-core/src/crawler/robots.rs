@@ -7,7 +7,6 @@ use url::Url;
 pub struct RobotsChecker {
     cache: Arc<DashMap<String, CachedRobots>>,
     client: reqwest::Client,
-    user_agent: String,
 }
 
 struct CachedRobots {
@@ -17,7 +16,7 @@ struct CachedRobots {
 }
 
 impl RobotsChecker {
-    pub fn new(user_agent: String) -> Self {
+    pub fn new(_user_agent: String) -> Self {
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(10))
             .build()
@@ -26,7 +25,6 @@ impl RobotsChecker {
         Self {
             cache: Arc::new(DashMap::new()),
             client,
-            user_agent,
         }
     }
 
@@ -84,7 +82,7 @@ impl RobotsChecker {
     }
 
     pub fn get_crawl_delay(&self, domain: &str) -> Option<Duration> {
-        self.cache.get(domain).and_then(|cached| {
+        self.cache.get(domain).and_then(|_cached| {
             None
         })
     }

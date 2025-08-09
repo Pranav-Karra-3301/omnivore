@@ -5,7 +5,7 @@ pub mod worker;
 pub mod politeness;
 pub mod robots;
 
-use crate::{CrawlConfig, CrawlResult, CrawlStats, Error, Result};
+use crate::{CrawlConfig, CrawlStats, Result};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use url::Url;

@@ -2,7 +2,6 @@ pub mod graph_db;
 pub mod kv;
 pub mod vector_db;
 
-use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

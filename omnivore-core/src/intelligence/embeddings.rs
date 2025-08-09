@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use crate::Result;
 
 pub struct EmbeddingGenerator {
     dimension: usize,

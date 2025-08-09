@@ -2,14 +2,12 @@ use std::future::Future;
 use tokio::task::JoinHandle;
 
 pub struct Scheduler {
-    max_workers: usize,
     handles: Vec<JoinHandle<()>>,
 }
 
 impl Scheduler {
-    pub fn new(max_workers: usize) -> Self {
+    pub fn new(_max_workers: usize) -> Self {
         Self {
-            max_workers,
             handles: Vec::new(),
         }
     }

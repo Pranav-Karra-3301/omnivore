@@ -1,12 +1,10 @@
-use crate::{Error, Result};
+use crate::Result;
 
-pub struct VectorStore {
-    dimension: usize,
-}
+pub struct VectorStore {}
 
 impl VectorStore {
-    pub fn new(dimension: usize) -> Self {
-        Self { dimension }
+    pub fn new(_dimension: usize) -> Self {
+        Self {}
     }
 
     pub fn insert(&mut self, _id: String, _vector: Vec<f32>) -> Result<()> {

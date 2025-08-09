@@ -1,5 +1,5 @@
 use crate::graph::{Edge, KnowledgeGraph, Node};
-use crate::{Error, Result};
+use crate::Result;
 use std::collections::HashMap;
 
 pub struct GraphBuilder {

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CodeBlock from '@/components/CodeBlock'
 import { 
   Download, 
   Zap, 
@@ -193,26 +194,25 @@ export default function DocsPage() {
 
       Here's a simple example to get you started:
 
-      ```bash
-      # Install Omnivore
-      brew install omnivore
+      <CodeBlock language="bash">{`# Install Omnivore
+brew install omnivore
 
-      # Start crawling
-      omnivore crawl https://example.com --workers 5 --depth 3
+# Start crawling
+omnivore crawl https://example.com --workers 5 --depth 3
 
-      # Build knowledge graph
-      omnivore graph crawl-results.json --output knowledge-graph.db
-
-      # Start API server
-      omnivore-api
-      ```
+# Build knowledge graph
+omnivore graph crawl-results.json --output knowledge-graph.db`}</CodeBlock>
 
       ## What's Next?
 
       - **New to Omnivore?** Start with the [Installation Guide](/docs/installation)
       - **Ready to crawl?** Jump to [Quick Start](/docs/quickstart)
       - **Want to customize?** Check out [Configuration](/docs/configuration)
-      - **Building integrations?** Explore the [API Reference](/docs/rest-api)
+      - **Building integrations?** Explore the CLI and data formats in the docs
+
+      <div className="not-prose mt-8 text-sm text-gray-500">
+        Full documentation is available on <a href="https://omnivore.readthedocs.io/en/latest/" className="text-blue-600 hover:text-blue-700" target="_blank" rel="noopener noreferrer">Read the Docs</a>.
+      </div>
     </div>
   )
 }

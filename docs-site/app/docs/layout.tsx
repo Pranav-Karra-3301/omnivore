@@ -30,11 +30,9 @@ const navigation = [
     ]
   },
   {
-    name: 'API Reference',
+    name: 'Reference',
     items: [
       { name: 'CLI Commands', href: '/docs/cli', icon: Code },
-      { name: 'REST API', href: '/docs/rest-api', icon: Code },
-      { name: 'GraphQL API', href: '/docs/graphql-api', icon: Code },
     ]
   },
 ]
@@ -64,6 +62,14 @@ export default function DocsLayout({
                 </div>
                 <span className="font-semibold text-gray-900">Omnivore Docs</span>
               </div>
+              <a
+                href="https://omnivore.readthedocs.io/en/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-4 text-sm text-gray-500 hover:text-gray-700"
+              >
+                Full Docs ↗
+              </a>
             </div>
           </div>
         </div>
@@ -102,6 +108,11 @@ export default function DocsLayout({
                   </ul>
                 </div>
               ))}
+              <div className="text-xs text-gray-500 pt-6 border-t border-gray-200">
+                <a href="https://github.com/Pranav-Karra-3301/omnivore" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700">
+                  Open source on GitHub
+                </a>
+              </div>
             </div>
           </nav>
 
@@ -109,6 +120,11 @@ export default function DocsLayout({
           <main className="flex-1 py-8 pl-8">
             <div className="max-w-4xl">
               {children}
+              <div className="mt-12 text-xs text-gray-400">
+                <span>
+                  Built with ❤️ and Rust · <a href="https://pranavkarra.me" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 decoration-gray-600 hover:text-gray-600">Developed by Pranav Karra</a>
+                </span>
+              </div>
             </div>
           </main>
         </div>

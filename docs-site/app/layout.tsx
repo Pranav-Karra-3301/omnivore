@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import dynamic from 'next/dynamic'
+
+const CopyCodeClient = dynamic(() => import('@/components/CopyCodeClient'), { ssr: false })
 
 const inter = Inter({ subsets: ['latin'] })
 const jetbrainsMono = JetBrains_Mono({ 
@@ -45,6 +48,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.className} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         {children}
+        <CopyCodeClient />
       </body>
     </html>
   )

@@ -34,15 +34,9 @@ export default function HomePage() {
                 <Link href="/docs" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Documentation
                 </Link>
-                <Link href="/guides" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Guides
-                </Link>
-                <Link href="/api" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  API Reference
-                </Link>
-                <Link href="/examples" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Examples
-                </Link>
+                <a href="https://omnivore.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Read the Docs
+                </a>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -84,20 +78,19 @@ export default function HomePage() {
               Extract, analyze, and graph data from the web at scale with intelligent processing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/docs/installation"
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
+              <Link href="/docs/installation" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 <Download className="w-5 h-5 mr-2" />
                 Get Started
               </Link>
-              <Link
-                href="/docs"
+              <a
+                href="https://omnivore.readthedocs.io/en/latest/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 <Book className="w-5 h-5 mr-2" />
-                Read Docs
-              </Link>
+                Full Docs
+              </a>
               <a
                 href="https://github.com/Pranav-Karra-3301/omnivore"
                 target="_blank"
@@ -110,7 +103,7 @@ export default function HomePage() {
             </div>
           </div>
           
-          {/* Demo Video/Image Placeholder */}
+          {/* Demo Terminal Snippet */}
           <div className="mt-16 max-w-4xl mx-auto">
             <div className="bg-gray-900 rounded-xl p-8 shadow-2xl">
               <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm">
@@ -122,13 +115,6 @@ export default function HomePage() {
                 </div>
                 <div className="text-green-400">
                   <p>$ omnivore crawl https://example.com --workers 10 --depth 5</p>
-                  <p className="text-blue-400 mt-2">🕸️  Omnivore Web Crawler</p>
-                  <p className="text-gray-300 mt-1">Starting crawl from: https://example.com</p>
-                  <p className="text-gray-300">Configuration:</p>
-                  <p className="text-gray-300">  Workers: 10</p>
-                  <p className="text-gray-300">  Max depth: 5</p>
-                  <p className="text-green-400 mt-2">✨ [00:01:23] Crawled: 1,247 | Success: 1,201 | Failed: 46</p>
-                  <p className="text-green-400">📊 Final Statistics: 1,247 URLs crawled in 1m 23s</p>
                 </div>
               </div>
             </div>
@@ -220,7 +206,7 @@ export default function HomePage() {
               Powered by Best-in-Class Technologies
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Built with modern Rust ecosystem and proven libraries
+              Built with modern Rust ecosystem and proven libraries. Open source and community-driven.
             </p>
           </div>
 
@@ -332,10 +318,9 @@ export default function HomePage() {
               <h3 className="text-xl font-semibold text-gray-900 mb-3">3. Analyze</h3>
               <div className="bg-gray-900 rounded-lg p-4 text-left">
                 <code className="text-green-400 font-mono text-sm">
-                  # Build knowledge graph<br />
-                  omnivore graph data.json<br /><br />
-                  # Start API server<br />
-                  omnivore-api
+                  # Build knowledge graph
+                  <br />
+                  omnivore graph data.json
                 </code>
               </div>
             </div>
@@ -383,7 +368,7 @@ export default function HomePage() {
                 <li><Link href="/docs/installation" className="hover:text-white transition-colors">Installation</Link></li>
                 <li><Link href="/docs/quickstart" className="hover:text-white transition-colors">Quick Start</Link></li>
                 <li><Link href="/docs/configuration" className="hover:text-white transition-colors">Configuration</Link></li>
-                <li><Link href="/api" className="hover:text-white transition-colors">API Reference</Link></li>
+                
               </ul>
             </div>
 
@@ -410,10 +395,10 @@ export default function HomePage() {
 
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">
-              © 2024 Omnivore. Released under MIT and Apache-2.0 licenses.
+              © 2024 Omnivore. Open source under MIT and Apache-2.0 licenses.
             </p>
             <p className="text-gray-400 mt-4 md:mt-0">
-              Built with ❤️ and Rust
+              Built with ❤️ and Rust · <a href="https://pranavkarra.me" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 decoration-gray-600 hover:text-white">Developed by Pranav Karra</a>
             </p>
           </div>
         </div>

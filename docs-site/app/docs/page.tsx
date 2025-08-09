@@ -117,29 +117,33 @@ export default function DocsPage() {
         </Link>
       </div>
 
-      ## What's Inside
+      <h2>What's Inside</h2>
+      <p>This documentation covers everything you need to know about Omnivore:</p>
 
-      This documentation covers everything you need to know about Omnivore:
+      <h3>Core Features</h3>
+      <ul>
+        <li><strong>Parallel Crawling</strong>: Async/await with Tokio runtime for maximum performance</li>
+        <li><strong>Smart Processing</strong>: AI-powered entity recognition and content classification</li>
+        <li><strong>Knowledge Graphs</strong>: Build entity-relationship graphs automatically</li>
+        <li><strong>Respectful Crawling</strong>: Built-in robots.txt compliance and rate limiting</li>
+        <li><strong>Multiple Storage</strong>: Support for RocksDB, PostgreSQL, and graph databases</li>
+      </ul>
 
-      ### Core Features
-      - **Parallel Crawling**: Async/await with Tokio runtime for maximum performance
-      - **Smart Processing**: AI-powered entity recognition and content classification  
-      - **Knowledge Graphs**: Build entity-relationship graphs automatically
-      - **Respectful Crawling**: Built-in robots.txt compliance and rate limiting
-      - **Multiple Storage**: Support for RocksDB, PostgreSQL, and graph databases
+      <h3>Architecture</h3>
+      <ul>
+        <li><strong>omnivore-core</strong>: Core crawler and processing engine</li>
+        <li><strong>omnivore-cli</strong>: Command-line interface with rich features</li>
+        <li><strong>Plugin System</strong>: Extensible architecture for custom processors</li>
+      </ul>
 
-      ### Architecture
-      - **omnivore-core**: Core crawler and processing engine
-      - **omnivore-cli**: Command-line interface with rich features
-      - **omnivore-api**: REST and GraphQL API server
-      - **Plugin System**: Extensible architecture for custom processors
+      <h3>Deployment Options</h3>
+      <ul>
+        <li><strong>Homebrew</strong>: Easy installation on macOS and Linux</li>
+        <li><strong>Docker</strong>: Containerized deployment with orchestration</li>
+        <li><strong>From Source</strong>: Build and customize for your needs</li>
+      </ul>
 
-      ### Deployment Options
-      - **Homebrew**: Easy installation on macOS and Linux
-      - **Docker**: Containerized deployment with orchestration
-      - **From Source**: Build and customize for your needs
-
-      ## Getting Help
+      <h2>Getting Help</h2>
 
       <div className="not-prose bg-gray-50 rounded-lg p-6 my-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -190,9 +194,8 @@ export default function DocsPage() {
         </div>
       </div>
 
-      ## Quick Example
-
-      Here's a simple example to get you started:
+      <h2>Quick Example</h2>
+      <p>Here's a simple example to get you started:</p>
 
       <CodeBlock language="bash">{`# Install Omnivore
 brew install omnivore
@@ -203,15 +206,16 @@ omnivore crawl https://example.com --workers 5 --depth 3
 # Build knowledge graph
 omnivore graph crawl-results.json --output knowledge-graph.db`}</CodeBlock>
 
-      ## What's Next?
-
-      - **New to Omnivore?** Start with the [Installation Guide](/docs/installation)
-      - **Ready to crawl?** Jump to [Quick Start](/docs/quickstart)
-      - **Want to customize?** Check out [Configuration](/docs/configuration)
-      - **Building integrations?** Explore the CLI and data formats in the docs
+      <h2>What's Next?</h2>
+      <ul>
+        <li><strong>New to Omnivore?</strong> Start with the <Link href="/docs/installation" className="text-blue-600 hover:text-blue-700">Installation Guide</Link></li>
+        <li><strong>Ready to crawl?</strong> Jump to <Link href="/docs/quickstart" className="text-blue-600 hover:text-blue-700">Quick Start</Link></li>
+        <li><strong>Want to customize?</strong> Check out <Link href="/docs/configuration" className="text-blue-600 hover:text-blue-700">Configuration</Link></li>
+        <li><strong>Building integrations?</strong> Explore the CLI and data formats in the docs</li>
+      </ul>
 
       <div className="not-prose mt-8 text-sm text-gray-500">
-        Full documentation is available on <a href="https://omnivore.readthedocs.io/en/latest/" className="text-blue-600 hover:text-blue-700" target="_blank" rel="noopener noreferrer">Read the Docs</a>.
+        More documentation references are available on <a href="https://readthedocs.org" className="text-blue-600 hover:text-blue-700" target="_blank" rel="noopener noreferrer">readthedocs.org</a>.
       </div>
     </div>
   )

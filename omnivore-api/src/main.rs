@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
         .layer(axum::extract::Extension(schema));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
-    
+
     tracing::info!("🚀 Omnivore API server running at http://0.0.0.0:3000");
     tracing::info!("📊 GraphQL playground available at http://0.0.0.0:3000/graphql");
 
@@ -114,24 +114,22 @@ async fn start_crawl(
         };
 
         match url::Url::parse(&url_clone) {
-            Ok(url) => {
-                match omnivore_core::crawler::Crawler::new(config).await {
-                    Ok(crawler) => {
-                        let crawler = Arc::new(crawler);
-                        let _ = crawler.add_seed(url).await;
-                        let crawler_clone = crawler.clone();
-                        tokio::spawn(async move {
-                            let _ = crawler_clone.start().await;
-                            let stats = crawler_clone.get_stats().await;
-                            let mut stats_lock = state.crawler_stats.write().await;
-                            *stats_lock = Some(stats);
-                        });
-                    }
-                    Err(e) => {
-                        tracing::error!("Failed to create crawler: {}", e);
-                    }
+            Ok(url) => match omnivore_core::crawler::Crawler::new(config).await {
+                Ok(crawler) => {
+                    let crawler = Arc::new(crawler);
+                    let _ = crawler.add_seed(url).await;
+                    let crawler_clone = crawler.clone();
+                    tokio::spawn(async move {
+                        let _ = crawler_clone.start().await;
+                        let stats = crawler_clone.get_stats().await;
+                        let mut stats_lock = state.crawler_stats.write().await;
+                        *stats_lock = Some(stats);
+                    });
                 }
-            }
+                Err(e) => {
+                    tracing::error!("Failed to create crawler: {}", e);
+                }
+            },
             Err(e) => {
                 tracing::error!("Invalid URL: {}", e);
             }
@@ -147,7 +145,7 @@ async fn start_crawl(
 
 async fn get_stats(State(state): State<AppState>) -> impl IntoResponse {
     let stats = state.crawler_stats.read().await;
-    
+
     match &*stats {
         Some(s) => Json(serde_json::json!({
             "status": "completed",

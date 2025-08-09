@@ -44,17 +44,22 @@ impl KnowledgeGraph {
     }
 
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
-        let from_idx = self.node_index.get(&edge.from)
+        let from_idx = self
+            .node_index
+            .get(&edge.from)
             .ok_or_else(|| Error::Graph(format!("Node {} not found", edge.from)))?;
-        let to_idx = self.node_index.get(&edge.to)
+        let to_idx = self
+            .node_index
+            .get(&edge.to)
             .ok_or_else(|| Error::Graph(format!("Node {} not found", edge.to)))?;
-        
+
         self.graph.add_edge(*from_idx, *to_idx, edge);
         Ok(())
     }
 
     pub fn get_node(&self, id: &str) -> Option<&Node> {
-        self.node_index.get(id)
+        self.node_index
+            .get(id)
             .and_then(|idx| self.graph.node_weight(*idx))
     }
 

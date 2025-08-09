@@ -46,7 +46,8 @@ pub enum Validator {
 
 impl Schema {
     pub fn validate(&self, data: &Value) -> Result<()> {
-        let obj = data.as_object()
+        let obj = data
+            .as_object()
             .ok_or_else(|| Error::Parse("Data must be an object".to_string()))?;
 
         for required_field in &self.required {

@@ -15,6 +15,7 @@ import {
   Rocket
 } from 'lucide-react'
 import CodeBlock from '@/components/CodeBlock'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default function HomePage() {
   return (
@@ -48,6 +49,9 @@ export default function HomePage() {
               >
                 <Github className="w-5 h-5" />
               </a>
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
               <Link
                 href="/docs/installation"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"

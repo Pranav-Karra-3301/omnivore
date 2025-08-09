@@ -67,7 +67,8 @@ impl Extractor {
                 Transformer::Extract { regex } => {
                     if let Ok(re) = Regex::new(regex) {
                         if let Some(captures) = re.captures(&result) {
-                            captures.get(1)
+                            captures
+                                .get(1)
                                 .map(|m| m.as_str().to_string())
                                 .unwrap_or(result)
                         } else {
@@ -77,17 +78,15 @@ impl Extractor {
                         result
                     }
                 }
-                Transformer::Split { delimiter } => {
-                    result.split(delimiter)
-                        .next()
-                        .unwrap_or(&result)
-                        .to_string()
-                }
-                Transformer::Join { delimiter } => {
-                    result.split_whitespace()
-                        .collect::<Vec<_>>()
-                        .join(delimiter)
-                }
+                Transformer::Split { delimiter } => result
+                    .split(delimiter)
+                    .next()
+                    .unwrap_or(&result)
+                    .to_string(),
+                Transformer::Join { delimiter } => result
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(delimiter),
             };
         }
 
@@ -99,9 +98,7 @@ pub struct EmailExtractor;
 
 impl EmailExtractor {
     pub fn extract(text: &str) -> Vec<String> {
-        let email_regex = Regex::new(
-            r"(?i)[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}"
-        ).unwrap();
+        let email_regex = Regex::new(r"(?i)[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}").unwrap();
 
         email_regex
             .find_iter(text)
@@ -114,9 +111,8 @@ pub struct PhoneExtractor;
 
 impl PhoneExtractor {
     pub fn extract(text: &str) -> Vec<String> {
-        let phone_regex = Regex::new(
-            r"(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
-        ).unwrap();
+        let phone_regex =
+            Regex::new(r"(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}").unwrap();
 
         phone_regex
             .find_iter(text)
@@ -129,9 +125,7 @@ pub struct PriceExtractor;
 
 impl PriceExtractor {
     pub fn extract(text: &str) -> Vec<f64> {
-        let price_regex = Regex::new(
-            r"(?:\$|USD|EUR|£|€)\s*(\d+(?:[.,]\d{1,2})?)"
-        ).unwrap();
+        let price_regex = Regex::new(r"(?:\$|USD|EUR|£|€)\s*(\d+(?:[.,]\d{1,2})?)").unwrap();
 
         price_regex
             .captures_iter(text)

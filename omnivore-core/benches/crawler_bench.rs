@@ -19,7 +19,7 @@ fn frontier_benchmark(c: &mut Criterion) {
             let url = Url::parse(&format!("https://example.com/page{}", i)).unwrap();
             frontier.add(url, i % 10).unwrap();
         }
-        
+
         b.iter(|| {
             let mut f = frontier.clone();
             for _ in 0..1000 {

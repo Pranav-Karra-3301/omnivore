@@ -41,7 +41,7 @@ impl Parser {
 
         for rule in &self.config.rules {
             let value = self.extract_by_rule(&document, rule)?;
-            
+
             if rule.required && value.is_null() {
                 return Err(Error::Parse(format!(
                     "Required field '{}' not found",
@@ -83,7 +83,9 @@ impl Parser {
 
     fn extract_value(&self, element: &scraper::ElementRef, attribute: &Option<String>) -> Value {
         let text = if let Some(attr) = attribute {
-            element.value().attr(attr)
+            element
+                .value()
+                .attr(attr)
                 .map(|s| s.to_string())
                 .unwrap_or_default()
         } else {
@@ -119,9 +121,11 @@ impl Parser {
 
         let meta_selector = Selector::parse("meta[name], meta[property]").unwrap();
         let mut meta_tags = HashMap::new();
-        
+
         for element in document.select(&meta_selector) {
-            let name = element.value().attr("name")
+            let name = element
+                .value()
+                .attr("name")
                 .or_else(|| element.value().attr("property"));
             let content = element.value().attr("content");
 
@@ -140,7 +144,7 @@ impl Parser {
     pub fn extract_text(&self, html: &str) -> String {
         let document = Html::parse_document(html);
         let body_selector = Selector::parse("body").unwrap();
-        
+
         document
             .select(&body_selector)
             .next()

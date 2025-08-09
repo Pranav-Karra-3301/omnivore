@@ -1,9 +1,9 @@
 pub mod browser;
 pub mod frontier;
-pub mod scheduler;
-pub mod worker;
 pub mod politeness;
 pub mod robots;
+pub mod scheduler;
+pub mod worker;
 
 use crate::{CrawlConfig, CrawlStats, Result};
 use std::sync::Arc;
@@ -23,9 +23,8 @@ impl Crawler {
         let config = Arc::new(config);
         let scheduler = scheduler::Scheduler::new(config.max_workers);
         let frontier = Arc::new(RwLock::new(frontier::Frontier::new()));
-        let politeness_engine = Arc::new(
-            politeness::PolitenessEngine::new(config.politeness.clone())
-        );
+        let politeness_engine =
+            Arc::new(politeness::PolitenessEngine::new(config.politeness.clone()));
         let stats = Arc::new(RwLock::new(CrawlStats {
             total_urls: 0,
             successful: 0,
@@ -61,7 +60,7 @@ impl Crawler {
 
     pub async fn start(self: &Arc<Self>) -> Result<()> {
         let start_time = std::time::Instant::now();
-        
+
         loop {
             let url_entry = {
                 let mut frontier = self.frontier.write().await;
@@ -86,31 +85,33 @@ impl Crawler {
                 let politeness = self.politeness_engine.clone();
                 let stats = self.stats.clone();
 
-                self.scheduler.spawn(async move {
-                    let worker = worker::Worker::new(config.clone());
-                    match worker.crawl(url.clone()).await {
-                        Ok(result) => {
-                            politeness.record_crawl(&url).await;
-                            
-                            let mut stats = stats.write().await;
-                            stats.successful += 1;
-                            stats.in_progress -= 1;
+                self.scheduler
+                    .spawn(async move {
+                        let worker = worker::Worker::new(config.clone());
+                        match worker.crawl(url.clone()).await {
+                            Ok(result) => {
+                                politeness.record_crawl(&url).await;
 
-                            let mut frontier = frontier.write().await;
-                            for link_str in result.links.iter() {
-                                if let Ok(link_url) = url::Url::parse(link_str) {
-                                    let _ = frontier.add(link_url, depth + 1);
+                                let mut stats = stats.write().await;
+                                stats.successful += 1;
+                                stats.in_progress -= 1;
+
+                                let mut frontier = frontier.write().await;
+                                for link_str in result.links.iter() {
+                                    if let Ok(link_url) = url::Url::parse(link_str) {
+                                        let _ = frontier.add(link_url, depth + 1);
+                                    }
                                 }
                             }
+                            Err(e) => {
+                                tracing::error!("Failed to crawl {}: {}", url, e);
+                                let mut stats = stats.write().await;
+                                stats.failed += 1;
+                                stats.in_progress -= 1;
+                            }
                         }
-                        Err(e) => {
-                            tracing::error!("Failed to crawl {}: {}", url, e);
-                            let mut stats = stats.write().await;
-                            stats.failed += 1;
-                            stats.in_progress -= 1;
-                        }
-                    }
-                }).await;
+                    })
+                    .await;
 
                 let mut stats = self.stats.write().await;
                 stats.in_progress += 1;

@@ -54,9 +54,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.className} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 dark:text-gray-100 transition-colors">
-        <div className="fixed right-4 top-4 z-50">
-          <ThemeToggle />
-        </div>
         {children}
         <CopyCodeClient />
         <script dangerouslySetInnerHTML={{ __html: `(() => {try {const t=localStorage.getItem('theme'); if (t==='dark') document.documentElement.classList.add('dark');} catch{} })();` }} />

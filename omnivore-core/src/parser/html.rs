@@ -16,8 +16,9 @@ impl HtmlParser {
     pub fn select(&self, selector: &str) -> Result<Vec<String>> {
         let selector = Selector::parse(selector)
             .map_err(|e| Error::Parse(format!("Invalid selector: {:?}", e)))?;
-        
-        Ok(self.document
+
+        Ok(self
+            .document
             .select(&selector)
             .map(|el| el.text().collect::<String>())
             .collect())
@@ -26,8 +27,9 @@ impl HtmlParser {
     pub fn select_attr(&self, selector: &str, attribute: &str) -> Result<Vec<String>> {
         let selector = Selector::parse(selector)
             .map_err(|e| Error::Parse(format!("Invalid selector: {:?}", e)))?;
-        
-        Ok(self.document
+
+        Ok(self
+            .document
             .select(&selector)
             .filter_map(|el| el.value().attr(attribute).map(String::from))
             .collect())
@@ -85,8 +87,10 @@ impl HtmlParser {
         let og_selector = Selector::parse("meta[property^='og:']").unwrap();
 
         for element in self.document.select(&og_selector) {
-            if let (Some(property), Some(content)) = 
-                (element.value().attr("property"), element.value().attr("content")) {
+            if let (Some(property), Some(content)) = (
+                element.value().attr("property"),
+                element.value().attr("content"),
+            ) {
                 let key = property.strip_prefix("og:").unwrap_or(property);
                 og_data.insert(key.to_string(), Value::String(content.to_string()));
             }
@@ -100,8 +104,10 @@ impl HtmlParser {
         let twitter_selector = Selector::parse("meta[name^='twitter:']").unwrap();
 
         for element in self.document.select(&twitter_selector) {
-            if let (Some(name), Some(content)) = 
-                (element.value().attr("name"), element.value().attr("content")) {
+            if let (Some(name), Some(content)) = (
+                element.value().attr("name"),
+                element.value().attr("content"),
+            ) {
                 let key = name.strip_prefix("twitter:").unwrap_or(name);
                 twitter_data.insert(key.to_string(), Value::String(content.to_string()));
             }

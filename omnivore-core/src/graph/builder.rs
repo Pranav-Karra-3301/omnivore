@@ -13,7 +13,12 @@ impl GraphBuilder {
         }
     }
 
-    pub fn add_entity(&mut self, id: String, entity_type: String, properties: HashMap<String, serde_json::Value>) -> Result<()> {
+    pub fn add_entity(
+        &mut self,
+        id: String,
+        entity_type: String,
+        properties: HashMap<String, serde_json::Value>,
+    ) -> Result<()> {
         let node = Node {
             id,
             node_type: entity_type,
@@ -22,7 +27,13 @@ impl GraphBuilder {
         self.graph.add_node(node)
     }
 
-    pub fn add_relationship(&mut self, from: String, to: String, rel_type: String, properties: HashMap<String, serde_json::Value>) -> Result<()> {
+    pub fn add_relationship(
+        &mut self,
+        from: String,
+        to: String,
+        rel_type: String,
+        properties: HashMap<String, serde_json::Value>,
+    ) -> Result<()> {
         let edge = Edge {
             from,
             to,

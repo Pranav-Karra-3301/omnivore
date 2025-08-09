@@ -30,7 +30,9 @@ impl RobotsChecker {
 
     pub async fn is_allowed(&self, url: &Url) -> Result<bool> {
         let robots_url = self.get_robots_url(url)?;
-        let domain = url.domain().ok_or_else(|| Error::Parse("Invalid domain".to_string()))?;
+        let domain = url
+            .domain()
+            .ok_or_else(|| Error::Parse("Invalid domain".to_string()))?;
 
         if let Some(cached) = self.cache.get(domain) {
             if cached.fetched_at.elapsed() < cached.ttl {
@@ -39,7 +41,7 @@ impl RobotsChecker {
         }
 
         let robots_txt = self.fetch_robots_txt(&robots_url).await?;
-        
+
         let allowed = self.check_robots_txt(&robots_txt, url.as_str());
 
         self.cache.insert(
@@ -82,8 +84,6 @@ impl RobotsChecker {
     }
 
     pub fn get_crawl_delay(&self, domain: &str) -> Option<Duration> {
-        self.cache.get(domain).and_then(|_cached| {
-            None
-        })
+        self.cache.get(domain).and_then(|_cached| None)
     }
 }

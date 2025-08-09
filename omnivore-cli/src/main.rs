@@ -2,10 +2,7 @@ use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand};
 use colored::*;
 use indicatif::{ProgressBar, ProgressStyle};
-use omnivore_core::{
-    crawler::Crawler,
-    CrawlConfig, PolitenessConfig,
-};
+use omnivore_core::{crawler::Crawler, CrawlConfig, PolitenessConfig};
 use std::path::PathBuf;
 use tokio;
 use url::Url;
@@ -42,7 +39,11 @@ enum Commands {
         #[arg(long, help = "Respect robots.txt")]
         respect_robots: bool,
 
-        #[arg(long, default_value = "100", help = "Delay between requests in milliseconds")]
+        #[arg(
+            long,
+            default_value = "100",
+            help = "Delay between requests in milliseconds"
+        )]
         delay: u64,
     },
 
@@ -126,7 +127,10 @@ async fn crawl_command(
     println!("Configuration:");
     println!("  Workers: {}", workers.to_string().yellow());
     println!("  Max depth: {}", depth.to_string().yellow());
-    println!("  Respect robots.txt: {}", respect_robots.to_string().yellow());
+    println!(
+        "  Respect robots.txt: {}",
+        respect_robots.to_string().yellow()
+    );
     println!("  Delay: {}ms", delay.to_string().yellow());
     println!();
 
@@ -181,8 +185,14 @@ async fn crawl_command(
     let final_stats = crawler.get_stats().await;
     println!();
     println!("{}", "📊 Final Statistics:".bold().green());
-    println!("  Total URLs crawled: {}", final_stats.total_urls.to_string().cyan());
-    println!("  Successful: {}", final_stats.successful.to_string().green());
+    println!(
+        "  Total URLs crawled: {}",
+        final_stats.total_urls.to_string().cyan()
+    );
+    println!(
+        "  Successful: {}",
+        final_stats.successful.to_string().green()
+    );
     println!("  Failed: {}", final_stats.failed.to_string().red());
     println!("  Time elapsed: {:?}", final_stats.elapsed_time);
 
@@ -197,9 +207,9 @@ async fn crawl_command(
 
 async fn parse_command(file: PathBuf, rules: Option<PathBuf>) -> Result<()> {
     println!("{}", "📄 Parsing HTML file...".bold().cyan());
-    
+
     let content = tokio::fs::read_to_string(&file).await?;
-    
+
     let rules = if let Some(rules_path) = rules {
         println!("Using rules from: {}", rules_path.display());
         let rules_content = tokio::fs::read_to_string(rules_path).await?;
@@ -208,14 +218,12 @@ async fn parse_command(file: PathBuf, rules: Option<PathBuf>) -> Result<()> {
         Vec::new()
     };
 
-    let parser = omnivore_core::parser::Parser::new(
-        omnivore_core::parser::ParseConfig {
-            rules,
-            schema_name: None,
-            clean_text: true,
-            extract_metadata: true,
-        }
-    );
+    let parser = omnivore_core::parser::Parser::new(omnivore_core::parser::ParseConfig {
+        rules,
+        schema_name: None,
+        clean_text: true,
+        extract_metadata: true,
+    });
 
     let result = parser.parse(&content)?;
     println!();
@@ -227,9 +235,9 @@ async fn parse_command(file: PathBuf, rules: Option<PathBuf>) -> Result<()> {
 
 async fn graph_command(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
     println!("{}", "🔗 Building knowledge graph...".bold().cyan());
-    
+
     let data = tokio::fs::read_to_string(&input).await?;
-    
+
     println!("Processing {} bytes of data", data.len());
 
     if let Some(output_path) = output {
@@ -243,7 +251,7 @@ async fn graph_command(input: PathBuf, output: Option<PathBuf>) -> Result<()> {
 
 async fn stats_command(session: Option<String>) -> Result<()> {
     println!("{}", "📊 Crawl Statistics".bold().cyan());
-    
+
     if let Some(session_id) = session {
         println!("Session: {}", session_id.yellow());
     } else {
@@ -256,7 +264,7 @@ async fn stats_command(session: Option<String>) -> Result<()> {
 fn generate_completions(shell: clap_complete::Shell) {
     use clap_complete::{generate, Generator};
     use std::io;
-    
+
     fn print_completions<G: Generator>(gen: G, cmd: &mut clap::Command) {
         generate(gen, cmd, cmd.get_name().to_string(), &mut io::stdout());
     }

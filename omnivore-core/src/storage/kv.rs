@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use rocksdb::{DB, Options};
+use rocksdb::{Options, DB};
 use serde::{de::DeserializeOwned, Serialize};
 use std::path::Path;
 
@@ -11,10 +11,10 @@ impl KvStore {
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
         let mut opts = Options::default();
         opts.create_if_missing(true);
-        
+
         let db = DB::open(&opts, path)
             .map_err(|e| Error::Storage(format!("Failed to open database: {}", e)))?;
-        
+
         Ok(Self { db })
     }
 

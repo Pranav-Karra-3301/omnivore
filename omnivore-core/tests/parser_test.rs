@@ -9,7 +9,7 @@ fn test_parser_creation() {
         clean_text: true,
         extract_metadata: true,
     };
-    
+
     let parser = Parser::new(config);
     let html = "<html><head><title>Test</title></head><body>Hello</body></html>";
     let result = parser.parse(html);
@@ -41,11 +41,11 @@ fn test_parse_with_rules() {
         clean_text: true,
         extract_metadata: false,
     };
-    
+
     let parser = Parser::new(config);
     let html = "<html><head><title>Test Page</title></head><body>Hello World</body></html>";
     let result = parser.parse(html).unwrap();
-    
+
     assert_eq!(result["title"], json!("Test Page"));
     assert_eq!(result["body"], json!("Hello World"));
 }
@@ -58,7 +58,7 @@ fn test_extract_links() {
         clean_text: true,
         extract_metadata: false,
     };
-    
+
     let parser = Parser::new(config);
     let html = r#"
         <html>
@@ -69,20 +69,24 @@ fn test_extract_links() {
             </body>
         </html>
     "#;
-    
+
     let base_url = url::Url::parse("https://example.com").unwrap();
     let links = parser.extract_links(html, &base_url).unwrap();
-    
+
     assert_eq!(links.len(), 3);
     assert!(links.iter().any(|u| u.as_str() == "https://example.com/"));
-    assert!(links.iter().any(|u| u.as_str() == "https://example.com/page2"));
-    assert!(links.iter().any(|u| u.as_str() == "https://example.com/page3.html"));
+    assert!(links
+        .iter()
+        .any(|u| u.as_str() == "https://example.com/page2"));
+    assert!(links
+        .iter()
+        .any(|u| u.as_str() == "https://example.com/page3.html"));
 }
 
 #[test]
 fn test_html_parser() {
     use omnivore_core::parser::html::HtmlParser;
-    
+
     let html = r#"
         <html>
             <head>
@@ -95,12 +99,12 @@ fn test_html_parser() {
             </body>
         </html>
     "#;
-    
+
     let parser = HtmlParser::new(html);
-    
+
     let h1_text = parser.select("h1").unwrap();
     assert_eq!(h1_text[0], "Heading");
-    
+
     let og_data = parser.extract_opengraph();
     assert_eq!(og_data["title"], json!("Test Title"));
     assert_eq!(og_data["description"], json!("Test Description"));

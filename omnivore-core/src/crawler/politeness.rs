@@ -8,7 +8,18 @@ use url::Url;
 
 pub struct PolitenessEngine {
     config: PolitenessConfig,
-    domain_limiters: Arc<DashMap<String, Arc<RateLimiter<governor::state::direct::NotKeyed, governor::state::InMemoryState, governor::clock::DefaultClock>>>>,
+    domain_limiters: Arc<
+        DashMap<
+            String,
+            Arc<
+                RateLimiter<
+                    governor::state::direct::NotKeyed,
+                    governor::state::InMemoryState,
+                    governor::clock::DefaultClock,
+                >,
+            >,
+        >,
+    >,
     last_access: Arc<DashMap<String, Instant>>,
 }
 
@@ -28,11 +39,11 @@ impl PolitenessEngine {
         };
 
         let limiter = self.get_or_create_limiter(&domain);
-        
+
         if let Some(last) = self.last_access.get(&domain) {
             let elapsed = last.elapsed();
             let min_delay = Duration::from_millis(self.config.default_delay_ms);
-            
+
             if elapsed < min_delay {
                 return false;
             }
@@ -47,13 +58,22 @@ impl PolitenessEngine {
         }
     }
 
-    fn get_or_create_limiter(&self, domain: &str) -> Arc<RateLimiter<governor::state::direct::NotKeyed, governor::state::InMemoryState, governor::clock::DefaultClock>> {
+    fn get_or_create_limiter(
+        &self,
+        domain: &str,
+    ) -> Arc<
+        RateLimiter<
+            governor::state::direct::NotKeyed,
+            governor::state::InMemoryState,
+            governor::clock::DefaultClock,
+        >,
+    > {
         self.domain_limiters
             .entry(domain.to_string())
             .or_insert_with(|| {
                 let quota = Quota::per_second(
                     NonZeroU32::new(self.config.max_requests_per_second as u32)
-                        .unwrap_or(NonZeroU32::new(1).unwrap())
+                        .unwrap_or(NonZeroU32::new(1).unwrap()),
                 );
                 Arc::new(RateLimiter::direct(quota))
             })

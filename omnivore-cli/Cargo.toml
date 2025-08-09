@@ -14,7 +14,7 @@ name = "omnivore"
 path = "src/main.rs"
 
 [dependencies]
-omnivore-core = { path = "../omnivore-core" }
+omnivore-core = { version = "0.1.0", path = "../omnivore-core" }
 
 # CLI
 clap = { workspace = true }

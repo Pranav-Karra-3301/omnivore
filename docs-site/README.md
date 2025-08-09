@@ -79,7 +79,7 @@ The site can be deployed as:
 
 ```bash
 NEXT_PUBLIC_API_URL=https://api.omnivore.dev
-NEXT_PUBLIC_GITHUB_URL=https://github.com/yourusername/omnivore
+NEXT_PUBLIC_GITHUB_URL=https://github.com/Pranav-Karra-3301/omnivore
 ```
 
 ## Contributing

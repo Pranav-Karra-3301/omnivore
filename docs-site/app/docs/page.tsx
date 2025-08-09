@@ -150,12 +150,12 @@ export default function DocsPage() {
             <h4 className="font-medium text-gray-900 mb-2">Community Resources</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://github.com/yourusername/omnivore/issues" className="text-blue-600 hover:text-blue-700 flex items-center">
+                <a href="https://github.com/Pranav-Karra-3301/omnivore/issues" className="text-blue-600 hover:text-blue-700 flex items-center">
                   GitHub Issues <ExternalLink className="w-3 h-3 ml-1" />
                 </a>
               </li>
               <li>
-                <a href="https://github.com/yourusername/omnivore/discussions" className="text-blue-600 hover:text-blue-700 flex items-center">
+                <a href="https://github.com/Pranav-Karra-3301/omnivore/discussions" className="text-blue-600 hover:text-blue-700 flex items-center">
                   Discussions <ExternalLink className="w-3 h-3 ml-1" />
                 </a>
               </li>

@@ -20,11 +20,11 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 #### Homebrew (macOS/Linux)
 ```bash
 # Install from tap (once published)
-brew tap yourusername/omnivore
+brew tap Pranav-Karra-3301/omnivore
 brew install omnivore
 
 # Or install from source
-git clone https://github.com/yourusername/omnivore.git
+git clone https://github.com/Pranav-Karra-3301/omnivore.git
 cd omnivore
 brew install --build-from-source ./Formula/omnivore.rb
 ```
@@ -32,7 +32,7 @@ brew install --build-from-source ./Formula/omnivore.rb
 #### From Source
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/omnivore.git
+git clone https://github.com/Pranav-Karra-3301/omnivore.git
 cd omnivore
 
 # Build the project

@@ -1,8 +1,8 @@
 site_name: Omnivore
 site_description: Universal Rust Web Crawler & Knowledge Graph Builder
 site_url: https://omnivore.readthedocs.io
-repo_url: https://github.com/yourusername/omnivore
-repo_name: yourusername/omnivore
+repo_url: https://github.com/Pranav-Karra-3301/omnivore
+repo_name: Pranav-Karra-3301/omnivore
 theme:
   name: material
   features:

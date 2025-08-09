@@ -2,7 +2,7 @@
 
 Install via the tap once published:
 ```bash
-brew tap yourusername/omnivore
+brew tap Pranav-Karra-3301/omnivore
 brew install omnivore
 ```
 

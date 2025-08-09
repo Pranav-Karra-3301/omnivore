@@ -1,7 +1,7 @@
 [crawler]
 max_workers = 100
 max_depth = 10
-user_agent = "Omnivore/1.0 (+https://github.com/yourusername/omnivore)"
+user_agent = "Omnivore/1.0 (+https://github.com/Pranav-Karra-3301/omnivore)"
 respect_robots_txt = true
 timeout_ms = 30000
 max_retries = 3

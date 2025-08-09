@@ -1,7 +1,7 @@
 class Omnivore < Formula
   desc "Universal Rust Web Crawler & Knowledge Graph Builder"
-  homepage "https://github.com/yourusername/omnivore"
-  url "https://github.com/yourusername/omnivore/archive/refs/tags/v0.1.0.tar.gz"
+  homepage "https://github.com/Pranav-Karra-3301/omnivore"
+  url "https://github.com/Pranav-Karra-3301/omnivore/archive/refs/tags/v0.1.0.tar.gz"
   sha256 "REPLACE_WITH_ACTUAL_SHA256"
   license "MIT OR Apache-2.0"
 

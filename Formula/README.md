@@ -6,7 +6,7 @@ This directory contains the Homebrew formula for installing Omnivore on macOS an
 
 ### From this tap (once published):
 ```bash
-brew tap yourusername/omnivore
+brew tap Pranav-Karra-3301/omnivore
 brew install omnivore
 ```
 

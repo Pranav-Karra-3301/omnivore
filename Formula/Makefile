@@ -7,7 +7,7 @@ FORMULA_NAME = omnivore
 FORMULA_FILE = omnivore.rb
 
 # GitHub repository details
-GITHUB_USER = yourusername
+GITHUB_USER = Pranav-Karra-3301
 GITHUB_REPO = omnivore
 
 help: ## Show this help message

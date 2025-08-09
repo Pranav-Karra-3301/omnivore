@@ -47,7 +47,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               <a
-                href="https://github.com/yourusername/omnivore"
+                href="https://github.com/Pranav-Karra-3301/omnivore"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -99,7 +99,7 @@ export default function HomePage() {
                 Read Docs
               </Link>
               <a
-                href="https://github.com/yourusername/omnivore"
+                href="https://github.com/Pranav-Karra-3301/omnivore"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
@@ -368,7 +368,7 @@ export default function HomePage() {
                 Universal web crawler and knowledge graph system built in Rust.
               </p>
               <div className="flex space-x-4">
-                <a href="https://github.com/yourusername/omnivore" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://github.com/Pranav-Karra-3301/omnivore" className="text-gray-400 hover:text-white transition-colors">
                   <Github className="w-5 h-5" />
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -400,7 +400,7 @@ export default function HomePage() {
             <div>
               <h3 className="font-semibold mb-4">Community</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="https://github.com/yourusername/omnivore" className="hover:text-white transition-colors">GitHub</a></li>
+                <li><a href="https://github.com/Pranav-Karra-3301/omnivore" className="hover:text-white transition-colors">GitHub</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Discord</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Discussions</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Contributing</a></li>

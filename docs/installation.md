@@ -2,13 +2,13 @@
 
 ## Homebrew (macOS/Linux)
 ```bash
-brew tap yourusername/omnivore
+brew tap Pranav-Karra-3301/omnivore
 brew install omnivore
 ```
 
 ## From Source
 ```bash
-git clone https://github.com/yourusername/omnivore.git
+git clone https://github.com/Pranav-Karra-3301/omnivore.git
 cd omnivore
 cargo build --release
 make install # optional helper from Makefile

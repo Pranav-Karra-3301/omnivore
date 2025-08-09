@@ -72,7 +72,7 @@ export default function InstallationPage() {
 
       ```bash
       # Add the Omnivore tap
-      brew tap yourusername/omnivore
+      brew tap Pranav-Karra-3301/omnivore
 
       # Install Omnivore
       brew install omnivore
@@ -84,7 +84,7 @@ export default function InstallationPage() {
 
       ```bash
       # Clone the repository
-      git clone https://github.com/yourusername/omnivore.git
+      git clone https://github.com/Pranav-Karra-3301/omnivore.git
       cd omnivore
 
       # Install from local formula
@@ -145,7 +145,7 @@ export default function InstallationPage() {
 
       ```bash
       # Clone the repository
-      git clone https://github.com/yourusername/omnivore.git
+      git clone https://github.com/Pranav-Karra-3301/omnivore.git
       cd omnivore
 
       # Start the full stack
@@ -169,7 +169,7 @@ export default function InstallationPage() {
 
       ```bash
       # Clone and build
-      git clone https://github.com/yourusername/omnivore.git
+      git clone https://github.com/Pranav-Karra-3301/omnivore.git
       cd omnivore
 
       # Build Docker image
@@ -241,7 +241,7 @@ export default function InstallationPage() {
 
       ```bash
       # Clone the repository
-      git clone https://github.com/yourusername/omnivore.git
+      git clone https://github.com/Pranav-Karra-3301/omnivore.git
       cd omnivore
 
       # Build in release mode
@@ -364,7 +364,7 @@ export default function InstallationPage() {
       brew uninstall omnivore
 
       # Remove tap (optional)
-      brew untap yourusername/omnivore
+      brew untap Pranav-Karra-3301/omnivore
       ```
 
       ### Cargo (From Source)
@@ -421,8 +421,8 @@ export default function InstallationPage() {
       If you encounter issues:
 
       1. Check the [Troubleshooting Guide](/guides/troubleshooting)
-      2. Search [existing issues](https://github.com/yourusername/omnivore/issues)
-      3. Create a [new issue](https://github.com/yourusername/omnivore/issues/new) with:
+      2. Search [existing issues](https://github.com/Pranav-Karra-3301/omnivore/issues)
+      3. Create a [new issue](https://github.com/Pranav-Karra-3301/omnivore/issues/new) with:
          - Your operating system and version
          - Installation method used
          - Complete error messages

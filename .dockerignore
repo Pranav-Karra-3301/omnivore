@@ -1,0 +1,40 @@
+# Git
+.git/
+.gitignore
+
+# Rust
+target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Data
+data/
+
+# Documentation
+docs/
+README.md
+
+# CI/CD
+.github/
+
+# Homebrew
+Formula/
+
+# Scripts (not needed in container)
+scripts/
+
+# Coverage reports
+coverage/

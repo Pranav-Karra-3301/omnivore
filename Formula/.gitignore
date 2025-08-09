@@ -1,0 +1,16 @@
+# Homebrew formula gitignore
+
+# Backup files
+*.bak
+*.orig
+
+# macOS
+.DS_Store
+
+# Testing artifacts
+test-output/
+*.log
+
+# Temporary files
+tmp/
+temp/

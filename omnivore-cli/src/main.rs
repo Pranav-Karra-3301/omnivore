@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use colored::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use omnivore_core::{
@@ -66,6 +66,12 @@ enum Commands {
         #[arg(help = "Show statistics for a crawl session")]
         session: Option<String>,
     },
+
+    #[command(hide = true)]
+    GenerateCompletions {
+        #[arg(help = "Shell to generate completions for")]
+        shell: clap_complete::Shell,
+    },
 }
 
 #[tokio::main]
@@ -95,6 +101,9 @@ async fn main() -> Result<()> {
         }
         Commands::Stats { session } => {
             stats_command(session).await?;
+        }
+        Commands::GenerateCompletions { shell } => {
+            generate_completions(shell);
         }
     }
 
@@ -236,4 +245,16 @@ async fn stats_command(session: Option<String>) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn generate_completions(shell: clap_complete::Shell) {
+    use clap_complete::{generate, Generator};
+    use std::io;
+    
+    fn print_completions<G: Generator>(gen: G, cmd: &mut clap::Command) {
+        generate(gen, cmd, cmd.get_name().to_string(), &mut io::stdout());
+    }
+
+    let mut cmd = Cli::command();
+    print_completions(shell, &mut cmd);
 }

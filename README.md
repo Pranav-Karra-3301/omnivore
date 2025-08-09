@@ -17,6 +17,19 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 
 ### Installation
 
+#### Homebrew (macOS/Linux)
+```bash
+# Install from tap (once published)
+brew tap yourusername/omnivore
+brew install omnivore
+
+# Or install from source
+git clone https://github.com/yourusername/omnivore.git
+cd omnivore
+brew install --build-from-source ./Formula/omnivore.rb
+```
+
+#### From Source
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/omnivore.git
@@ -25,8 +38,17 @@ cd omnivore
 # Build the project
 cargo build --release
 
-# Run the CLI
-cargo run --bin omnivore -- crawl https://example.com
+# Install locally
+make install
+```
+
+#### Docker
+```bash
+# Run with Docker
+docker run -it --rm -p 3000:3000 omnivore:latest
+
+# Or use docker-compose for full stack
+docker-compose up -d
 ```
 
 ### Basic Usage

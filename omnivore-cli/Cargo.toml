@@ -18,6 +18,7 @@ omnivore-core = { path = "../omnivore-core" }
 
 # CLI
 clap = { workspace = true }
+clap_complete = "4.5"
 indicatif = { workspace = true }
 colored = { workspace = true }
 

@@ -1,9 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "framework": "nextjs",
   "buildCommand": "cd docs-site && npm ci --no-audit --no-fund && npm run build",
-  "installCommand": "echo Using buildCommand for install step",
+  "installCommand": "cd docs-site && npm ci --no-audit --no-fund",
   "outputDirectory": "docs-site/out",
   "env": {
     "NODE_ENV": "production"

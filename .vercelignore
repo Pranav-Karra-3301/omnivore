@@ -1,0 +1,4 @@
+# Only ship docs-site for build context
+*
+!docs-site/**
+!vercel.json

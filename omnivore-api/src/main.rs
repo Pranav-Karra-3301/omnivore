@@ -104,6 +104,7 @@ async fn start_crawl(
     Json(payload): Json<CrawlRequest>,
 ) -> impl IntoResponse {
     let crawl_id = uuid::Uuid::new_v4().to_string();
+    let url_clone = payload.url.clone();
 
     tokio::spawn(async move {
         let config = CrawlConfig {
@@ -112,16 +113,19 @@ async fn start_crawl(
             ..Default::default()
         };
 
-        match url::Url::parse(&payload.url) {
+        match url::Url::parse(&url_clone) {
             Ok(url) => {
                 match omnivore_core::crawler::Crawler::new(config).await {
                     Ok(crawler) => {
+                        let crawler = Arc::new(crawler);
                         let _ = crawler.add_seed(url).await;
-                        let _ = crawler.start().await;
-                        let stats = crawler.get_stats().await;
-                        
-                        let mut stats_lock = state.crawler_stats.write().await;
-                        *stats_lock = Some(stats);
+                        let crawler_clone = crawler.clone();
+                        tokio::spawn(async move {
+                            let _ = crawler_clone.start().await;
+                            let stats = crawler_clone.get_stats().await;
+                            let mut stats_lock = state.crawler_stats.write().await;
+                            *stats_lock = Some(stats);
+                        });
                     }
                     Err(e) => {
                         tracing::error!("Failed to create crawler: {}", e);

@@ -1,0 +1,97 @@
+[package]
+name = "omnivore-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/omnivore-core"
+description = "Core crawler and knowledge graph engine for Omnivore"
+
+[dependencies]
+# Async runtime
+tokio = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+
+# HTTP and networking
+reqwest = { workspace = true }
+hyper = { workspace = true }
+url = { workspace = true }
+
+# Browser automation
+thirtyfour = { workspace = true }
+
+# HTML parsing
+scraper = { workspace = true }
+html5ever = { workspace = true }
+select = { workspace = true }
+regex = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+toml = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Database and storage
+rocksdb = { workspace = true }
+redis = { workspace = true }
+sqlx = { workspace = true, optional = true }
+
+# Graph processing
+petgraph = { workspace = true }
+
+# Data structures
+dashmap = { workspace = true }
+indexmap = { workspace = true }
+priority-queue = { workspace = true }
+
+# Utilities
+once_cell = { workspace = true }
+parking_lot = { workspace = true }
+arc-swap = { workspace = true }
+bytes = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+base64 = { workspace = true }
+sha2 = { workspace = true }
+
+# Compression
+flate2 = { workspace = true }
+zstd = { workspace = true }
+
+# Rate limiting
+governor = { workspace = true }
+
+# Additional crawler-specific deps
+robotstxt = "0.3"
+mime = "0.3"
+encoding_rs = "0.8"
+
+[dev-dependencies]
+mockito = { workspace = true }
+proptest = { workspace = true }
+criterion = { workspace = true }
+tempfile = { workspace = true }
+
+[features]
+default = ["full"]
+full = ["graph-db", "vector-store", "browser"]
+graph-db = ["sqlx"]
+vector-store = []
+browser = []
+
+[[bench]]
+name = "crawler_bench"
+harness = false

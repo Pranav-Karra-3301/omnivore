@@ -1,0 +1,47 @@
+[crawler]
+max_workers = 100
+max_depth = 10
+user_agent = "Omnivore/1.0 (+https://github.com/yourusername/omnivore)"
+respect_robots_txt = true
+timeout_ms = 30000
+max_retries = 3
+
+[crawler.politeness]
+default_delay_ms = 100
+max_requests_per_second = 10.0
+backoff_multiplier = 2.0
+
+[parser]
+default_strategy = "auto"
+timeout_ms = 5000
+max_retries = 3
+clean_text = true
+extract_metadata = true
+
+[intelligence]
+enable_entity_recognition = true
+enable_relation_extraction = true
+enable_embeddings = false
+embedding_model = "local"
+
+[graph]
+database = "kuzu"
+max_nodes = 10_000_000
+max_edges = 100_000_000
+
+[storage]
+data_dir = "./data"
+cache_size_mb = 1024
+compression = "zstd"
+
+[api]
+host = "0.0.0.0"
+port = 3000
+max_connections = 1000
+request_timeout_ms = 60000
+
+[monitoring]
+enable_metrics = true
+metrics_port = 9090
+enable_tracing = true
+tracing_endpoint = "http://localhost:4317"

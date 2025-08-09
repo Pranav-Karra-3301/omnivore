@@ -1,0 +1,58 @@
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+data/
+
+# Cache
+.cache/
+tmp/
+
+# Coverage
+tarpaulin-report.html
+cobertura.xml
+
+# Documentation
+docs/_build/
+
+# Python (for any scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Node (for any web components)
+node_modules/
+dist/
+build/
+
+# Credentials
+*.pem
+*.key
+*.cert
+secrets/

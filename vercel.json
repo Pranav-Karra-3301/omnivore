@@ -1,24 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "cd docs-site && npm ci --no-audit --no-fund && npm run build",
-  "installCommand": "cd docs-site && npm ci --no-audit --no-fund",
-  "outputDirectory": "docs-site/out",
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "headers": [
-    {
-      "source": "/_next/static/(.*)",
-      "headers": [
-        { "key": "cache-control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        { "key": "cache-control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
-  ]
+  "buildCommand": "echo See docs-site/vercel.json; this root config is a no-op",
+  "installCommand": "echo See docs-site/vercel.json; this root config is a no-op",
+  "outputDirectory": ".",
+  "ignoreCommand": "echo Ignored at root; use the docs-site project"
 }

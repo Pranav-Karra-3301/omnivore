@@ -1,0 +1,5 @@
+- name: links
+  selector: a
+  attribute: href
+  multiple: true
+  required: false

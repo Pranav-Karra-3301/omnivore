@@ -200,13 +200,17 @@ async fn parse_command(file: PathBuf, rules: Option<PathBuf>) -> Result<()> {
     
     let content = tokio::fs::read_to_string(&file).await?;
     
-    if let Some(rules_path) = rules {
+    let rules = if let Some(rules_path) = rules {
         println!("Using rules from: {}", rules_path.display());
-    }
+        let rules_content = tokio::fs::read_to_string(rules_path).await?;
+        serde_yaml::from_str(&rules_content)?
+    } else {
+        Vec::new()
+    };
 
     let parser = omnivore_core::parser::Parser::new(
         omnivore_core::parser::ParseConfig {
-            rules: vec![],
+            rules,
             schema_name: None,
             clean_text: true,
             extract_metadata: true,

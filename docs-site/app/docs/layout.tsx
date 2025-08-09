@@ -63,12 +63,12 @@ export default function DocsLayout({
                 <span className="font-semibold text-gray-900">Omnivore Docs</span>
               </div>
               <a
-                href="https://omnivore.readthedocs.io/en/latest/"
+                href="https://readthedocs.org"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-4 text-sm text-gray-500 hover:text-gray-700"
               >
-                Full Docs ↗
+                readthedocs.org ↗
               </a>
             </div>
           </div>

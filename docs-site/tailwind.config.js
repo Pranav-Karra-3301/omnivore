@@ -5,6 +5,7 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -36,39 +37,40 @@ module.exports = {
       fontFamily: {
         'mono': ['JetBrains Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
       },
-      typography: {
+      typography: (theme) => ({
         DEFAULT: {
           css: {
             maxWidth: 'none',
-            color: '#334155',
-            h1: {
-              color: '#0f172a',
-            },
-            h2: {
-              color: '#0f172a',
-            },
-            h3: {
-              color: '#0f172a',
-            },
-            h4: {
-              color: '#0f172a',
-            },
+            color: theme('colors.gray.700'),
+            h1: { color: theme('colors.gray.900') },
+            h2: { color: theme('colors.gray.900') },
+            h3: { color: theme('colors.gray.900') },
+            h4: { color: theme('colors.gray.900') },
             code: {
-              color: '#dc2626',
-              backgroundColor: '#f1f5f9',
+              color: theme('colors.gray.800'),
+              backgroundColor: theme('colors.gray.100'),
               padding: '0.25rem 0.375rem',
               borderRadius: '0.25rem',
               fontWeight: '600',
             },
-            'code::before': {
-              content: '""',
-            },
-            'code::after': {
-              content: '""',
+            'code::before': { content: '""' },
+            'code::after': { content: '""' },
+          },
+        },
+        invert: {
+          css: {
+            color: theme('colors.gray.300'),
+            h1: { color: theme('colors.white') },
+            h2: { color: theme('colors.white') },
+            h3: { color: theme('colors.white') },
+            h4: { color: theme('colors.white') },
+            code: {
+              color: theme('colors.gray.100'),
+              backgroundColor: theme('colors.gray.800'),
             },
           },
         },
-      },
+      }),
     },
   },
   plugins: [

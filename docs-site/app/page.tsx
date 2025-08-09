@@ -34,8 +34,8 @@ export default function HomePage() {
                 <Link href="/docs" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Documentation
                 </Link>
-                <a href="https://omnivore.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Read the Docs
+                <a href="https://readthedocs.org" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  readthedocs.org
                 </a>
               </div>
             </div>
@@ -83,13 +83,13 @@ export default function HomePage() {
                 Get Started
               </Link>
               <a
-                href="https://omnivore.readthedocs.io/en/latest/"
+                href="https://readthedocs.org"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 <Book className="w-5 h-5 mr-2" />
-                Full Docs
+                Docs ↗
               </a>
               <a
                 href="https://github.com/Pranav-Karra-3301/omnivore"

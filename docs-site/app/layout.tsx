@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import dynamic from 'next/dynamic'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const CopyCodeClient = dynamic(() => import('@/components/CopyCodeClient'), { ssr: false })
 
@@ -54,26 +55,11 @@ export default function RootLayout({
     <html lang="en" className={`${inter.className} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 dark:text-gray-100 transition-colors">
         <div className="fixed right-4 top-4 z-50">
-          <button
-            onClick={() => {
-              const root = document.documentElement
-              const next = root.classList.contains('dark') ? 'light' : 'dark'
-              root.classList.toggle('dark')
-              try { localStorage.setItem('theme', next) } catch {}
-            }}
-            className="rounded-md border border-gray-300/60 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-100 shadow-sm backdrop-blur hover:bg-white dark:hover:bg-gray-800"
-            aria-label="Toggle dark mode"
-          >
-            Toggle {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 'Light' : 'Dark'}
-          </button>
+          <ThemeToggle />
         </div>
         {children}
         <CopyCodeClient />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(() => {try {const t=localStorage.getItem('theme'); if (t==='dark') document.documentElement.classList.add('dark');} catch{} })();`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: `(() => {try {const t=localStorage.getItem('theme'); if (t==='dark') document.documentElement.classList.add('dark');} catch{} })();` }} />
       </body>
     </html>
   )

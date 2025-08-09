@@ -12,6 +12,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://omnivore.pranavkarra.me'),
   title: 'Omnivore - Universal Web Crawler & Knowledge Graph',
   description: 'High-performance, parallel web crawler and knowledge graph system built in Rust. Extract, analyze, and graph data from the web at scale.',
   keywords: ['web crawler', 'rust', 'knowledge graph', 'data extraction', 'scraping', 'parallel processing'],
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: '/preview.png',
         width: 1200,
         height: 630,
         alt: 'Omnivore Web Crawler',
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Omnivore - Universal Web Crawler & Knowledge Graph',
     description: 'High-performance, parallel web crawler and knowledge graph system built in Rust.',
-    images: ['/og-image.png'],
+    images: ['/preview.png'],
   },
   viewport: 'width=device-width, initial-scale=1',
   themeColor: '#0ea5e9',

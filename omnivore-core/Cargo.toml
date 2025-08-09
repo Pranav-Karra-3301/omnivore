@@ -8,6 +8,7 @@ repository.workspace = true
 homepage.workspace = true
 documentation = "https://docs.rs/omnivore-core"
 description = "Core crawler and knowledge graph engine for Omnivore"
+readme = "README.md"
 
 [dependencies]
 # Async runtime

@@ -59,7 +59,7 @@ impl Crawler {
         Ok(())
     }
 
-    pub async fn start(&self) -> Result<()> {
+    pub async fn start(self: &Arc<Self>) -> Result<()> {
         let start_time = std::time::Instant::now();
         
         loop {

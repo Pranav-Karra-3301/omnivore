@@ -144,7 +144,8 @@ async fn crawl_command(
         max_retries: 3,
     };
 
-    let crawler = Crawler::new(config).await?;
+    use std::sync::Arc;
+    let crawler: Arc<Crawler> = Arc::new(Crawler::new(config).await?);
     crawler.add_seed(start_url).await?;
 
     let progress = ProgressBar::new_spinner();
@@ -155,7 +156,7 @@ async fn crawl_command(
     );
 
     let stats_handle = tokio::spawn({
-        let crawler = std::sync::Arc::new(crawler);
+        let crawler = Arc::clone(&crawler);
         let progress = progress.clone();
         async move {
             loop {
@@ -172,6 +173,7 @@ async fn crawl_command(
         }
     });
 
+    let crawler = Arc::clone(&crawler);
     crawler.start().await?;
     stats_handle.abort();
     progress.finish_with_message("Crawl completed!");

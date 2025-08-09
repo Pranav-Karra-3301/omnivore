@@ -16,7 +16,7 @@ const nextConfig = {
   trailingSlash: true,
   output: 'export',
   distDir: 'out',
-  basePath: process.env.NODE_ENV === 'production' ? '/omnivore' : '',
+  basePath: '',
 }
 
 module.exports = nextConfig

@@ -1,4 +1,13 @@
-# 🕸️ Omnivore
+<p align="center">
+  <img src="https://ov.pranavkarra.me/logo.png" alt="ov" width="200"/>
+</p>
+
+
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](https://www.rust-lang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/Pranav-Karra-3301/omnivore)](https://github.com/Pranav-Karra-3301/omnivore/releases)
+
+# Omnivore
 
 **Universal Rust Web Crawler & Knowledge Graph Builder**
 

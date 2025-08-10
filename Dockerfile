@@ -17,17 +17,19 @@ COPY omnivore-cli/Cargo.toml ./omnivore-cli/
 COPY omnivore-api/Cargo.toml ./omnivore-api/
 
 # Create dummy source files to cache dependencies
-RUN mkdir -p omnivore-core/src omnivore-cli/src omnivore-api/src \
+RUN mkdir -p omnivore-core/src omnivore-cli/src omnivore-api/src omnivore-core/benches \
     && echo "fn main() {}" > omnivore-cli/src/main.rs \
     && echo "fn main() {}" > omnivore-api/src/main.rs \
-    && echo "pub fn dummy() {}" > omnivore-core/src/lib.rs
+    && echo "pub fn dummy() {}" > omnivore-core/src/lib.rs \
+    && echo "fn main() {}" > omnivore-core/benches/crawler_bench.rs
 
 # Build dependencies
 RUN cargo build --release --workspace
-RUN rm -rf omnivore-*/src
+RUN rm -rf omnivore-*/src omnivore-core/benches
 
 # Copy actual source code
 COPY omnivore-core/src ./omnivore-core/src
+COPY omnivore-core/benches ./omnivore-core/benches
 COPY omnivore-cli/src ./omnivore-cli/src  
 COPY omnivore-api/src ./omnivore-api/src
 COPY configs ./configs

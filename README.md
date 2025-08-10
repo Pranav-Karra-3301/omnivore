@@ -29,6 +29,9 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 - **Multiple Output Modes**: Save to file by default, or output to stdout
 
 ### Advanced Features
+- **Browser Mode**: Full JavaScript rendering with headless Chrome
+- **Interactive Crawling**: Automatically interact with dropdowns and filters
+- **Infinite Scroll**: Detect and handle infinite scroll patterns
 - **Politeness Engine**: Per-domain rate limiting with exponential backoff
 - **Error Logging**: Comprehensive error and warning logs for debugging
 - **Smart Redirect Handling**: Follow complex redirect chains automatically
@@ -106,6 +109,12 @@ omnivore crawl https://gradschool.psu.edu/program-metrics \
 
 # Extract code from a Git repository
 omnivore git https://github.com/rust-lang/rust-by-example
+
+# Crawl JavaScript-heavy site with browser
+omnivore crawl https://dynamic-site.com --browser
+
+# Crawl with interactive mode (dropdowns/filters)
+omnivore crawl https://academic-portal.edu --browser --interact --extract-tables
 
 # Open documentation
 omnivore docs
@@ -207,6 +216,8 @@ omnivore crawl [URL] [OPTIONS]
 - `--exclude-urls`: Exclude URLs from content output
 - `--respect-robots`: Respect robots.txt
 - `--delay <MS>`: Delay between requests in milliseconds
+- `--browser`: Use browser engine for JavaScript rendering (requires ChromeDriver)
+- `--interact`: Interact with dropdowns and filters (requires --browser)
 
 ### Git Command
 ```bash

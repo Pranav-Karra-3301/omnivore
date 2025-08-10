@@ -108,6 +108,12 @@ enum Commands {
         
         #[arg(long, help = "Extract and save tables as CSV files")]
         extract_tables: bool,
+        
+        #[arg(long, help = "Use browser engine for JavaScript-rendered content")]
+        browser: bool,
+        
+        #[arg(long, help = "Interact with dropdowns and filters (requires --browser)")]
+        interact: bool,
     },
 
     Parse {
@@ -169,8 +175,10 @@ async fn main() -> Result<()> {
             format,
             zip,
             extract_tables,
+            browser,
+            interact,
         } => {
-            crawl_command(url, workers, depth, output, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables).await?;
+            crawl_command(url, workers, depth, output, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables, browser, interact).await?;
         }
         Commands::Parse { file, rules, output } => {
             parse_command(file, rules, output).await?;
@@ -324,6 +332,8 @@ async fn crawl_command(
     format: OutputFormat,
     zip: bool,
     extract_tables: bool,
+    browser: bool,
+    interact: bool,
 ) -> Result<()> {
     println!("{}", "🕸️  Omnivore Web Crawler".bold().cyan());
     println!();
@@ -338,6 +348,14 @@ async fn crawl_command(
         respect_robots.to_string().yellow()
     );
     println!("  Delay: {}ms", delay.to_string().yellow());
+    
+    if browser {
+        println!("  Browser mode: {}", "enabled".green());
+        if interact {
+            println!("  Interactive mode: {}", "enabled (will interact with dropdowns/filters)".green());
+        }
+    }
+    
     println!();
 
     let config = CrawlConfig {
@@ -354,6 +372,46 @@ async fn crawl_command(
         max_retries: 3,
     };
 
+    // Handle browser mode separately
+    if browser {
+        #[cfg(feature = "browser")]
+        {
+            use omnivore_core::crawler::browser::{BrowserEngine, DynamicContent};
+            
+            println!("{}", "🌐 Starting browser engine...".bold().yellow());
+            println!("Note: Ensure ChromeDriver is running at localhost:9515");
+            println!();
+            
+            let mut browser_engine = BrowserEngine::new().await?;
+            browser_engine.connect().await.context("Failed to connect to browser. Make sure ChromeDriver is running (chromedriver --port=9515)")?;
+            
+            let crawl_results = if interact {
+                println!("Crawling with interactive mode (dropdowns and filters)...");
+                let dynamic_content = browser_engine.crawl_with_interactions(start_url.clone()).await?;
+                
+                // Convert dynamic content to regular crawl results
+                vec![convert_dynamic_to_crawl_result(dynamic_content)?]
+            } else {
+                println!("Crawling with browser (JavaScript rendering)...");
+                vec![browser_engine.crawl_dynamic(start_url.clone()).await?]
+            };
+            
+            browser_engine.disconnect().await?;
+            
+            // Process results similar to regular crawl
+            handle_crawl_results(crawl_results, &start_url, output, organize, format, zip, extract_tables, exclude_urls).await?;
+            
+            return Ok(());
+        }
+        
+        #[cfg(not(feature = "browser"))]
+        {
+            println!("{}", "⚠️  Browser mode requires the 'browser' feature to be enabled".yellow());
+            println!("Rebuild with: cargo build --features browser");
+            return Err(anyhow::anyhow!("Browser feature not enabled"));
+        }
+    }
+    
     use std::sync::Arc;
     let crawler: Arc<Crawler> = Arc::new(Crawler::new(config).await?);
     crawler.add_seed(start_url.clone()).await?;
@@ -794,6 +852,111 @@ async fn docs_command() -> Result<()> {
             .args(&["/C", "start", url])
             .spawn()
             .context("Failed to open browser")?;
+    }
+    
+    Ok(())
+}
+
+#[cfg(feature = "browser")]
+fn convert_dynamic_to_crawl_result(dynamic: omnivore_core::crawler::browser::DynamicContent) -> Result<CrawlResult> {
+    use omnivore_core::extractor::ContentExtractor;
+    
+    // Combine all content variations
+    let mut combined_content = dynamic.main_content.clone();
+    
+    for dropdown in &dynamic.dropdown_contents {
+        combined_content.push_str("\n\n--- Dropdown Variation ---\n");
+        combined_content.push_str(&dropdown.content);
+    }
+    
+    for filter in &dynamic.filter_contents {
+        combined_content.push_str("\n\n--- Filter Variation ---\n");
+        combined_content.push_str(&filter.content);
+    }
+    
+    let extractor = ContentExtractor::new();
+    let cleaned_content = Some(extractor.extract_clean_content(&combined_content));
+    
+    Ok(CrawlResult {
+        url: dynamic.url,
+        status_code: 200,
+        content: combined_content,
+        cleaned_content,
+        headers: std::collections::HashMap::new(),
+        extracted_data: serde_json::json!({
+            "has_infinite_scroll": dynamic.has_infinite_scroll,
+            "dropdown_variations": dynamic.dropdown_contents.len(),
+            "filter_variations": dynamic.filter_contents.len(),
+        }),
+        links: Vec::new(),
+        crawled_at: chrono::Utc::now(),
+    })
+}
+
+async fn handle_crawl_results(
+    crawl_results: Vec<CrawlResult>,
+    start_url: &Url,
+    output: Option<PathBuf>,
+    organize: bool,
+    format: OutputFormat,
+    zip: bool,
+    extract_tables: bool,
+    exclude_urls: bool,
+) -> Result<()> {
+    let final_stats = CrawlStats {
+        total_urls: crawl_results.len(),
+        successful: crawl_results.len(),
+        failed: 0,
+        in_progress: 0,
+        average_response_time_ms: 0.0,
+        start_time: chrono::Utc::now(),
+        elapsed_time: std::time::Duration::from_secs(0),
+    };
+    
+    println!();
+    println!("{}", "📊 Final Statistics:".bold().green());
+    println!(
+        "  Total pages processed: {}",
+        crawl_results.len().to_string().cyan()
+    );
+    
+    // Reuse existing output logic
+    if organize {
+        // Use existing organize logic
+        let domain = start_url.domain().unwrap_or("unknown");
+        let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+        let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
+        let output_dir = output.unwrap_or_else(|| {
+            PathBuf::from(format!("{}_{}_crawl", sanitized_domain, timestamp))
+        });
+        
+        tokio::fs::create_dir_all(&output_dir).await?;
+        
+        // Save the content
+        for (idx, result) in crawl_results.iter().enumerate() {
+            let page_file = output_dir.join(format!("page_{:04}.json", idx + 1));
+            let page_json = serde_json::to_string_pretty(&result)?;
+            tokio::fs::write(&page_file, page_json).await?;
+        }
+        
+        println!(
+            "{}  Organized {} pages into folder: {}",
+            "✅".bold().green(),
+            crawl_results.len().to_string().cyan(),
+            output_dir.display().to_string().yellow()
+        );
+    } else {
+        // Use existing single file output logic
+        let output_path = output.unwrap_or_else(|| generate_default_filename(start_url, "_browser_crawl", &format));
+        let output_json = serde_json::to_string_pretty(&crawl_results)?;
+        tokio::fs::write(&output_path, output_json).await?;
+        
+        println!(
+            "{}  Saved {} pages to: {}",
+            "✅".bold().green(),
+            crawl_results.len().to_string().cyan(),
+            output_path.display().to_string().yellow()
+        );
     }
     
     Ok(())

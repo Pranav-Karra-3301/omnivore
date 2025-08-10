@@ -178,6 +178,43 @@ tail -f warnings.log
   └── ...
   ```
 
+### 12. Browser Mode for JavaScript Content (--browser)
+- **Feature**: Use headless Chrome to render JavaScript-heavy websites
+- **Capabilities**:
+  - Full JavaScript execution
+  - AJAX content loading
+  - Single-page application support
+  - Infinite scroll detection and handling
+  - Dynamic content rendering
+- **Requirements**: ChromeDriver must be running (`chromedriver --port=9515`)
+- **Usage**:
+  ```bash
+  # Basic browser mode
+  omnivore crawl https://dynamic-site.com --browser
+  
+  # With interactive mode (dropdowns and filters)
+  omnivore crawl https://academic-portal.edu --browser --interact
+  ```
+
+### 13. Interactive Mode (--interact)
+- **Feature**: Automatically interact with dropdowns, filters, and form elements
+- **Works with**: Browser mode only (requires --browser flag)
+- **Capabilities**:
+  - Detect and interact with select dropdowns
+  - Click through filter options (checkboxes, radio buttons)
+  - Capture content variations from different selections
+  - Extract data from all dropdown/filter combinations
+- **Usage**:
+  ```bash
+  # Crawl academic site with program dropdowns
+  omnivore crawl https://gradschool.psu.edu/program-metrics \
+    --browser \
+    --interact \
+    --organize \
+    --extract-tables
+  ```
+- **Output**: Captures main content plus all variations from interactive elements
+
 ## Coming Soon (Planned Features)
 
 ### Content Deduplication (--dedupe)
@@ -225,6 +262,7 @@ omnivore --help
 ```
 
 ## Version History
+- v0.5.0: Browser mode with JavaScript rendering and interactive element handling
 - v0.4.0: Enhanced UX with ASCII art, docs command, improved git defaults
 - v0.3.0: Added advanced table extraction and CSV export capabilities
 - v0.2.0: Major feature update with professional crawling capabilities

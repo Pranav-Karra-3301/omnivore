@@ -7,6 +7,9 @@ pub mod parser;
 pub mod storage;
 pub mod table_extractor;
 
+#[cfg(feature = "browser")]
+pub mod browser;
+
 pub use error::{Error, Result};
 
 use serde::{Deserialize, Serialize};

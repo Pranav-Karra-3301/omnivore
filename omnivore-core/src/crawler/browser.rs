@@ -19,9 +19,7 @@ impl BrowserEngine {
                 self.driver = Some(driver);
                 Ok(())
             }
-            Err(e) => Err(Error::Browser(format!(
-                "Failed to connect to browser: {e}"
-            ))),
+            Err(e) => Err(Error::Browser(format!("Failed to connect to browser: {e}"))),
         }
     }
 

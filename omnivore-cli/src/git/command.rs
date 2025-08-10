@@ -35,16 +35,15 @@ pub struct GitArgs {
     #[arg(
         long,
         value_name = "PATH",
-        help = "Output filtered files to directory",
-        conflicts_with_all = &["json", "txt"]
+        help = "Output filtered files to directory"
     )]
     pub output: Option<PathBuf>,
 
-    #[arg(long, help = "Output as JSON", conflicts_with_all = &["output", "txt"])]
+    #[arg(long, help = "Output as JSON")]
     pub json: bool,
 
-    #[arg(long, help = "Output as plain text", conflicts_with_all = &["output", "json"])]
-    pub txt: bool,
+    #[arg(long, help = "Output to stdout instead of file")]
+    pub stdout: bool,
 
     #[arg(long, help = "Keep temporary clone after completion (for remote repos)")]
     pub keep: bool,
@@ -123,8 +122,23 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     let output_format = determine_output_format(&args);
     let mut writer = OutputWriter::new(output_format, repo_path.clone());
     
-    if let Some(output_path) = &args.output {
-        writer.set_output_path(output_path.clone());
+    // Generate default output filename if not stdout and no output specified
+    let output_path = if !args.stdout && args.output.is_none() {
+        let repo_name = extract_repo_name(&args.source);
+        let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
+        let extension = if args.json { "json" } else { "txt" };
+        Some(PathBuf::from(format!("{}_{}.{}", repo_name, timestamp, extension)))
+    } else {
+        args.output.clone()
+    };
+    
+    if let Some(ref path) = output_path {
+        writer.set_output_path(path.clone());
+    }
+    
+    // Force stdout if --stdout flag is set
+    if args.stdout {
+        writer.set_stdout_mode();
     }
 
     let files_written = writer
@@ -141,11 +155,13 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
             .green()
     );
 
-    if args.output.is_some() {
-        println!(
-            "Output written to: {}",
-            args.output.unwrap().display().to_string().cyan()
-        );
+    if let Some(path) = output_path {
+        if !args.stdout {
+            println!(
+                "Output written to: {}",
+                path.display().to_string().cyan()
+            );
+        }
     }
 
     acquisition.cleanup().await?;
@@ -156,10 +172,23 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
 fn determine_output_format(args: &GitArgs) -> OutputFormat {
     if args.json {
         OutputFormat::Json
-    } else if args.txt {
-        OutputFormat::Text
-    } else {
+    } else if args.output.is_some() && !args.stdout {
         OutputFormat::Directory
+    } else {
+        OutputFormat::Text
+    }
+}
+
+fn extract_repo_name(source: &str) -> String {
+    // Extract repository name from URL or path
+    let cleaned = source
+        .trim_end_matches('/')
+        .trim_end_matches(".git");
+    
+    if let Some(pos) = cleaned.rfind('/') {
+        cleaned[pos + 1..].to_string()
+    } else {
+        cleaned.to_string()
     }
 }
 

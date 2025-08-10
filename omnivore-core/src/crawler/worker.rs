@@ -1,4 +1,5 @@
 use crate::{CrawlConfig, CrawlResult, Error, Result};
+use crate::extractor::ContentExtractor;
 use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
@@ -14,6 +15,7 @@ impl Worker {
         let client = Client::builder()
             .user_agent(&config.user_agent)
             .timeout(Duration::from_millis(config.timeout_ms))
+            .redirect(reqwest::redirect::Policy::limited(10))
             .gzip(true)
             .brotli(true)
             .build()
@@ -34,12 +36,17 @@ impl Worker {
 
         let content = response.text().await?;
 
+        // Extract clean content
+        let extractor = ContentExtractor::new();
+        let cleaned_content = Some(extractor.extract_clean_content(&content));
+
         let links = self.extract_links(&url, &content)?;
 
         Ok(CrawlResult {
             url: url.to_string(),
             status_code,
             content,
+            cleaned_content,
             headers,
             extracted_data: serde_json::json!({}),
             links: links.into_iter().map(|u| u.to_string()).collect(),
@@ -53,7 +60,30 @@ impl Worker {
 
         while attempts < self.config.max_retries {
             match self.client.get(url.as_str()).send().await {
-                Ok(response) => return Ok(response),
+                Ok(response) => {
+                    // Log redirect chain if any
+                    if response.url() != url {
+                        let redirect_msg = format!("Redirected: {} -> {}", url, response.url());
+                        tracing::info!("{}", redirect_msg);
+                        
+                        // Write to warnings log
+                        let warning_entry = format!(
+                            "[{}] {}\n",
+                            chrono::Utc::now().to_rfc3339(),
+                            redirect_msg
+                        );
+                        if let Ok(mut file) = tokio::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open("warnings.log")
+                            .await
+                        {
+                            use tokio::io::AsyncWriteExt;
+                            let _ = file.write_all(warning_entry.as_bytes()).await;
+                        }
+                    }
+                    return Ok(response);
+                }
                 Err(e) => {
                     attempts += 1;
                     last_error = Some(e);

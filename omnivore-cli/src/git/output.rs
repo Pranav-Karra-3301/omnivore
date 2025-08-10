@@ -24,6 +24,7 @@ pub struct OutputWriter {
     format: OutputFormat,
     root_path: PathBuf,
     output_path: Option<PathBuf>,
+    force_stdout: bool,
 }
 
 impl OutputWriter {
@@ -32,11 +33,17 @@ impl OutputWriter {
             format,
             root_path,
             output_path: None,
+            force_stdout: false,
         }
     }
 
     pub fn set_output_path(&mut self, path: PathBuf) {
         self.output_path = Some(path);
+    }
+    
+    pub fn set_stdout_mode(&mut self) {
+        self.force_stdout = true;
+        self.output_path = None;
     }
 
     pub async fn write_files(&self, files: Vec<FilteredFile>) -> Result<usize> {
@@ -64,13 +71,13 @@ impl OutputWriter {
         let json = serde_json::to_string_pretty(&file_contents)
             .context("Failed to serialize to JSON")?;
 
-        if let Some(ref output_path) = self.output_path {
+        if self.force_stdout || self.output_path.is_none() {
+            print!("{}", json);
+            io::stdout().flush()?;
+        } else if let Some(ref output_path) = self.output_path {
             tokio::fs::write(output_path, json)
                 .await
                 .context("Failed to write JSON to file")?;
-        } else {
-            print!("{}", json);
-            io::stdout().flush()?;
         }
 
         Ok(count)
@@ -91,13 +98,13 @@ impl OutputWriter {
             }
         }
 
-        if let Some(ref output_path) = self.output_path {
+        if self.force_stdout || self.output_path.is_none() {
+            print!("{}", output);
+            io::stdout().flush()?;
+        } else if let Some(ref output_path) = self.output_path {
             tokio::fs::write(output_path, output)
                 .await
                 .context("Failed to write text to file")?;
-        } else {
-            print!("{}", output);
-            io::stdout().flush()?;
         }
 
         Ok(count)

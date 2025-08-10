@@ -1,9 +1,11 @@
 pub mod crawler;
 pub mod error;
+pub mod extractor;
 pub mod graph;
 pub mod intelligence;
 pub mod parser;
 pub mod storage;
+pub mod table_extractor;
 
 pub use error::{Error, Result};
 
@@ -56,6 +58,7 @@ pub struct CrawlResult {
     pub url: String,
     pub status_code: u16,
     pub content: String,
+    pub cleaned_content: Option<extractor::CleanedContent>,
     pub headers: std::collections::HashMap<String, String>,
     pub extracted_data: serde_json::Value,
     pub links: Vec<String>,

@@ -15,12 +15,25 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 
 ## Features
 
+### Web Crawling
 - **Parallel Crawling**: Async/await with Tokio, supporting 1000+ concurrent connections
-- **Dual-Mode Operation**: Static (Reqwest) and dynamic (browser automation) crawling
 - **Smart Content Extraction**: CSS selectors, XPath, and pattern matching
-- **Knowledge Graph**: Build and query entity-relationship graphs from crawled data
+- **Table Extraction**: Automatically detect and export HTML tables as CSV files
+- **Multiple Output Formats**: JSON, Markdown, CSV, YAML, and plain text
+- **Organized Output**: Structured folder hierarchy with separate files per page
+- **ZIP Compression**: Compress crawl results for easy storage and sharing
+
+### Code Extraction
+- **Git Repository Analysis**: Extract and filter code from any Git repository
+- **Smart File Filtering**: Include/exclude patterns, binary detection, size limits
+- **Multiple Output Modes**: Save to file by default, or output to stdout
+
+### Advanced Features
 - **Politeness Engine**: Per-domain rate limiting with exponential backoff
-- **Extensible Architecture**: Plugin system for custom extractors and processors
+- **Error Logging**: Comprehensive error and warning logs for debugging
+- **Smart Redirect Handling**: Follow complex redirect chains automatically
+- **Content Deduplication**: Avoid storing duplicate content
+- **Resume Capability**: Continue interrupted crawls from last checkpoint (coming soon)
 
 ## Quick Start
 
@@ -82,14 +95,20 @@ docker-compose up -d
 ### Basic Usage
 
 ```bash
-# Crawl a website
-omnivore crawl https://example.com --workers 10 --depth 5
+# Crawl a website with default settings
+omnivore crawl https://example.com
 
-# Parse HTML with custom rules
-omnivore parse index.html --rules parser-rules.yaml
+# Crawl with organized output and table extraction
+omnivore crawl https://gradschool.psu.edu/program-metrics \
+  --organize \
+  --extract-tables \
+  --format markdown
 
-# Build knowledge graph
-omnivore graph crawl-results.json --output graph.db
+# Extract code from a Git repository
+omnivore git https://github.com/rust-lang/rust-by-example
+
+# Open documentation
+omnivore docs
 
 # Extract code from Git repositories
 omnivore git https://github.com/user/repo.git --output ./extracted-code
@@ -148,14 +167,17 @@ Intelligent extraction of meaningful code from Git repositories:
 
 #### Usage Examples
 ```bash
-# Extract from remote repository
-omnivore git https://github.com/user/repo.git --output ./code
+# Extract from remote repository (saves to file by default)
+omnivore git https://github.com/user/repo
 
 # Extract specific file types
 omnivore git . --include "src/**/*.rs,Cargo.toml" --json
 
-# Exclude test files
-omnivore git . --exclude "**/*test*,**/*spec*" --txt
+# Output to stdout instead of file
+omnivore git . --include "*.md" --stdout
+
+# Keep cloned repository after extraction
+omnivore git https://github.com/rust-lang/rust --keep
 
 # Clone with specific depth
 omnivore git https://github.com/user/repo.git --depth 10 --output ./shallow
@@ -167,17 +189,48 @@ omnivore git . --allow-binary --no-gitignore --output ./full-extract
 omnivore git . --max-file-size 10485760 --json
 ```
 
-#### Command Options
-- `--include <patterns>`: Include only files matching these patterns (comma-separated)
-- `--exclude <patterns>`: Exclude files matching these patterns (comma-separated)
-- `--no-gitignore`: Don't respect .gitignore files
-- `--output <path>`: Output to directory (preserves structure)
-- `--json`: Output as JSON array of file objects
-- `--txt`: Output as concatenated text with separators
-- `--keep`: Keep temporary clone (for remote repos)
-- `--depth <n>`: Clone depth for remote repositories (default: 1)
-- `--allow-binary`: Include binary files in output
-- `--max-file-size <bytes>`: Maximum file size to include
+## CLI Reference
+
+### Crawl Command
+```bash
+omnivore crawl [URL] [OPTIONS]
+```
+
+**Options:**
+- `--workers <N>`: Number of parallel workers (default: 10)
+- `--depth <N>`: Maximum crawl depth (default: 5)
+- `--output <FILE>`: Output file path
+- `--organize`: Create organized folder structure
+- `--format <FORMAT>`: Output format: json, markdown, csv, yaml, text
+- `--extract-tables`: Extract tables as CSV files
+- `--zip`: Compress output to ZIP file
+- `--exclude-urls`: Exclude URLs from content output
+- `--respect-robots`: Respect robots.txt
+- `--delay <MS>`: Delay between requests in milliseconds
+
+### Git Command
+```bash
+omnivore git [SOURCE] [OPTIONS]
+```
+
+**Options:**
+- `--include <PATTERNS>`: Include only matching files (comma-separated)
+- `--exclude <PATTERNS>`: Exclude matching files (comma-separated)
+- `--no-gitignore`: Ignore .gitignore files
+- `--output <PATH>`: Output file path (default: generates filename)
+- `--json`: Output as JSON format
+- `--stdout`: Output to stdout instead of file
+- `--keep`: Keep cloned repository after extraction
+- `--depth <N>`: Clone depth for remote repositories
+- `--allow-binary`: Include binary files
+- `--max-file-size <BYTES>`: Maximum file size limit
+
+### Other Commands
+```bash
+omnivore docs          # Open documentation in browser
+omnivore stats         # Show crawl statistics
+omnivore parse [FILE]  # Parse HTML file
+```
 
 ## Configuration
 

@@ -1,0 +1,267 @@
+#compdef omnivore
+
+autoload -U is-at-least
+
+_omnivore() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_omnivore_commands" \
+"*::: :->omnivore" \
+&& ret=0
+    case $state in
+    (omnivore)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:omnivore-command-$line[1]:"
+        case $line[1] in
+            (crawl)
+_arguments "${_arguments_options[@]}" : \
+'-w+[]:WORKERS:_default' \
+'--workers=[]:WORKERS:_default' \
+'-d+[]:DEPTH:_default' \
+'--depth=[]:DEPTH:_default' \
+'-o+[Output file for results]:OUTPUT:_files' \
+'--output=[Output file for results]:OUTPUT:_files' \
+'--delay=[Delay between requests in milliseconds]:DELAY:_default' \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'--respect-robots[Respect robots.txt]' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':url -- URL to start crawling from:_default' \
+&& ret=0
+;;
+(parse)
+_arguments "${_arguments_options[@]}" : \
+'-r+[Parsing rules file]:RULES:_files' \
+'--rules=[Parsing rules file]:RULES:_files' \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':file -- File to parse:_files' \
+&& ret=0
+;;
+(graph)
+_arguments "${_arguments_options[@]}" : \
+'-o+[Output graph file]:OUTPUT:_files' \
+'--output=[Output graph file]:OUTPUT:_files' \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':input -- Build knowledge graph from crawl results:_files' \
+&& ret=0
+;;
+(stats)
+_arguments "${_arguments_options[@]}" : \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::session -- Show statistics for a crawl session:_default' \
+&& ret=0
+;;
+(git)
+_arguments "${_arguments_options[@]}" : \
+'*--include=[Include only files matching these patterns (comma-separated)]:INCLUDE:_default' \
+'*--exclude=[Exclude files matching these patterns (comma-separated)]:EXCLUDE:_default' \
+'(--json --txt)--output=[Output filtered files to directory]:PATH:_files' \
+'--depth=[Clone depth for remote repositories]:DEPTH:_default' \
+'--max-file-size=[Maximum file size in bytes (e.g., 10485760 for 10MB)]:SIZE:_default' \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'--no-gitignore[Ignore .gitignore files]' \
+'(--output --txt)--json[Output as JSON]' \
+'(--output --json)--txt[Output as plain text]' \
+'--keep[Keep temporary clone after completion (for remote repos)]' \
+'--allow-binary[Include binary files in output]' \
+'--verbose[Verbose output]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':source -- Repository source (URL or local path):_default' \
+&& ret=0
+;;
+(generate-completions)
+_arguments "${_arguments_options[@]}" : \
+'-c+[]:FILE:_files' \
+'--config=[]:FILE:_files' \
+'-v[]' \
+'--verbose[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- Shell to generate completions for:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_omnivore__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:omnivore-help-command-$line[1]:"
+        case $line[1] in
+            (crawl)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(parse)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(graph)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(stats)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(git)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate-completions)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_omnivore_commands] )) ||
+_omnivore_commands() {
+    local commands; commands=(
+'crawl:' \
+'parse:' \
+'graph:' \
+'stats:' \
+'git:' \
+'generate-completions:' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'omnivore commands' commands "$@"
+}
+(( $+functions[_omnivore__crawl_commands] )) ||
+_omnivore__crawl_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore crawl commands' commands "$@"
+}
+(( $+functions[_omnivore__generate-completions_commands] )) ||
+_omnivore__generate-completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore generate-completions commands' commands "$@"
+}
+(( $+functions[_omnivore__git_commands] )) ||
+_omnivore__git_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore git commands' commands "$@"
+}
+(( $+functions[_omnivore__graph_commands] )) ||
+_omnivore__graph_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore graph commands' commands "$@"
+}
+(( $+functions[_omnivore__help_commands] )) ||
+_omnivore__help_commands() {
+    local commands; commands=(
+'crawl:' \
+'parse:' \
+'graph:' \
+'stats:' \
+'git:' \
+'generate-completions:' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'omnivore help commands' commands "$@"
+}
+(( $+functions[_omnivore__help__crawl_commands] )) ||
+_omnivore__help__crawl_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help crawl commands' commands "$@"
+}
+(( $+functions[_omnivore__help__generate-completions_commands] )) ||
+_omnivore__help__generate-completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help generate-completions commands' commands "$@"
+}
+(( $+functions[_omnivore__help__git_commands] )) ||
+_omnivore__help__git_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help git commands' commands "$@"
+}
+(( $+functions[_omnivore__help__graph_commands] )) ||
+_omnivore__help__graph_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help graph commands' commands "$@"
+}
+(( $+functions[_omnivore__help__help_commands] )) ||
+_omnivore__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help help commands' commands "$@"
+}
+(( $+functions[_omnivore__help__parse_commands] )) ||
+_omnivore__help__parse_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help parse commands' commands "$@"
+}
+(( $+functions[_omnivore__help__stats_commands] )) ||
+_omnivore__help__stats_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore help stats commands' commands "$@"
+}
+(( $+functions[_omnivore__parse_commands] )) ||
+_omnivore__parse_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore parse commands' commands "$@"
+}
+(( $+functions[_omnivore__stats_commands] )) ||
+_omnivore__stats_commands() {
+    local commands; commands=()
+    _describe -t commands 'omnivore stats commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_omnivore" ]; then
+    _omnivore "$@"
+else
+    compdef _omnivore omnivore
+fi

@@ -1,4 +1,5 @@
 use crate::{CrawlResult, Error, Result};
+use crate::extractor::ContentExtractor;
 use thirtyfour::prelude::*;
 use url::Url;
 
@@ -43,10 +44,15 @@ impl BrowserEngine {
 
         let links = self.extract_links_js(driver, &url).await?;
 
+        // Extract clean content
+        let extractor = ContentExtractor::new();
+        let cleaned_content = Some(extractor.extract_clean_content(&content));
+
         Ok(CrawlResult {
             url: url.to_string(),
             status_code: 200,
             content,
+            cleaned_content,
             headers: std::collections::HashMap::new(),
             extracted_data: serde_json::json!({}),
             links: links.into_iter().map(|u| u.to_string()).collect(),

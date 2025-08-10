@@ -5,7 +5,7 @@ pub mod robots;
 pub mod scheduler;
 pub mod worker;
 
-use crate::{CrawlConfig, CrawlStats, Result};
+use crate::{CrawlConfig, CrawlResult, CrawlStats, Result};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use url::Url;
@@ -16,6 +16,7 @@ pub struct Crawler {
     frontier: Arc<RwLock<frontier::Frontier>>,
     politeness_engine: Arc<politeness::PolitenessEngine>,
     stats: Arc<RwLock<CrawlStats>>,
+    results: Arc<RwLock<Vec<CrawlResult>>>,
 }
 
 impl Crawler {
@@ -34,6 +35,7 @@ impl Crawler {
             start_time: chrono::Utc::now(),
             elapsed_time: std::time::Duration::from_secs(0),
         }));
+        let results = Arc::new(RwLock::new(Vec::new()));
 
         Ok(Self {
             config,
@@ -41,6 +43,7 @@ impl Crawler {
             frontier,
             politeness_engine,
             stats,
+            results,
         })
     }
 
@@ -84,6 +87,7 @@ impl Crawler {
                 let frontier = self.frontier.clone();
                 let politeness = self.politeness_engine.clone();
                 let stats = self.stats.clone();
+                let results = self.results.clone();
 
                 self.scheduler
                     .spawn(async move {
@@ -91,6 +95,10 @@ impl Crawler {
                         match worker.crawl(url.clone()).await {
                             Ok(result) => {
                                 politeness.record_crawl(&url).await;
+
+                                // Store the crawl result
+                                let mut results_guard = results.write().await;
+                                results_guard.push(result.clone());
 
                                 let mut stats = stats.write().await;
                                 stats.successful += 1;
@@ -104,7 +112,25 @@ impl Crawler {
                                 }
                             }
                             Err(e) => {
-                                tracing::error!("Failed to crawl {}: {}", url, e);
+                                let error_msg = format!("Failed to crawl {}: {}", url, e);
+                                tracing::error!("{}", error_msg);
+                                
+                                // Write to error log file
+                                let error_entry = format!(
+                                    "[{}] {}\n",
+                                    chrono::Utc::now().to_rfc3339(),
+                                    error_msg
+                                );
+                                if let Ok(mut file) = tokio::fs::OpenOptions::new()
+                                    .create(true)
+                                    .append(true)
+                                    .open("error.log")
+                                    .await
+                                {
+                                    use tokio::io::AsyncWriteExt;
+                                    let _ = file.write_all(error_entry.as_bytes()).await;
+                                }
+                                
                                 let mut stats = stats.write().await;
                                 stats.failed += 1;
                                 stats.in_progress -= 1;
@@ -133,6 +159,10 @@ impl Crawler {
 
     pub async fn get_stats(&self) -> CrawlStats {
         self.stats.read().await.clone()
+    }
+
+    pub async fn get_results(&self) -> Vec<CrawlResult> {
+        self.results.read().await.clone()
     }
 
     pub async fn stop(&self) {

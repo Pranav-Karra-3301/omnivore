@@ -1,8 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
-  "buildCommand": "echo See docs-site/vercel.json; this root config is a no-op",
-  "installCommand": "echo See docs-site/vercel.json; this root config is a no-op",
-  "outputDirectory": ".",
-  "ignoreCommand": "echo Ignored at root; use the docs-site project"
-}

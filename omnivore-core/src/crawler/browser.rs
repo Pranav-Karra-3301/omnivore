@@ -72,7 +72,9 @@ impl BrowserEngine {
             ]
         };
         
-        caps.add_chrome_option("args", chrome_args)?;
+        for arg in chrome_args {
+            caps.add_arg(arg).map_err(|e| Error::Browser(format!("Failed to add Chrome arg: {e}")))?;
+        }
 
         match WebDriver::new("http://localhost:9515", caps).await {
             Ok(driver) => {
@@ -211,17 +213,21 @@ impl BrowserEngine {
     async fn detect_infinite_scroll(&self, driver: &WebDriver) -> Result<bool> {
         let initial_height = driver
             .execute("return document.body.scrollHeight;", vec![])
-            .await?
+            .await
+            .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?  
             .json()
             .as_i64()
             .unwrap_or(0);
         
-        driver.execute("window.scrollTo(0, document.body.scrollHeight);", vec![]).await?;
+        driver.execute("window.scrollTo(0, document.body.scrollHeight);", vec![])
+            .await
+            .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?;
         sleep(Duration::from_secs(2)).await;
         
         let new_height = driver
             .execute("return document.body.scrollHeight;", vec![])
-            .await?
+            .await
+            .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?  
             .json()
             .as_i64()
             .unwrap_or(0);
@@ -235,7 +241,8 @@ impl BrowserEngine {
         for _ in 0..max_scrolls {
             let current_height = driver
                 .execute("return document.body.scrollHeight;", vec![])
-                .await?
+                .await
+                .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?
                 .json()
                 .as_i64()
                 .unwrap_or(0);
@@ -245,7 +252,9 @@ impl BrowserEngine {
             }
             
             last_height = current_height;
-            driver.execute("window.scrollTo(0, document.body.scrollHeight);", vec![]).await?;
+            driver.execute("window.scrollTo(0, document.body.scrollHeight);", vec![])
+            .await
+            .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?;
             sleep(Duration::from_secs(2)).await;
         }
         
@@ -260,8 +269,7 @@ impl BrowserEngine {
         
         for (idx, select) in selects.iter().enumerate() {
             // Get label if available
-            let label = select.get_attribute("aria-label").await.ok().flatten()
-                .or_else(|| select.get_attribute("name").await.ok().flatten());
+            let label = select.attr("aria-label").await.ok().flatten();
             
             // Get all options
             if let Ok(options) = select.find_all(By::Css("option")).await {
@@ -270,7 +278,8 @@ impl BrowserEngine {
                         sleep(Duration::from_millis(1000)).await;
                         self.wait_for_page_ready(driver).await?;
                         
-                        let content = driver.source().await?;
+                        let content = driver.source().await
+                            .map_err(|e| Error::Browser(format!("Failed to get page source: {e}")))?;
                         contents.push(DropdownContent {
                             index: idx,
                             label: label.clone(),
@@ -286,7 +295,7 @@ impl BrowserEngine {
             .await.unwrap_or_default();
         
         for (idx, dropdown) in custom_dropdowns.iter().enumerate() {
-            let label = dropdown.get_attribute("aria-label").await.ok().flatten();
+            let label = dropdown.attr("aria-label").await.ok().flatten();
             
             if let Ok(_) = dropdown.click().await {
                 sleep(Duration::from_millis(500)).await;
@@ -298,7 +307,8 @@ impl BrowserEngine {
                             sleep(Duration::from_millis(1000)).await;
                             self.wait_for_page_ready(driver).await?;
                             
-                            let content = driver.source().await?;
+                            let content = driver.source().await
+                            .map_err(|e| Error::Browser(format!("Failed to get page source: {e}")))?;
                             contents.push(DropdownContent {
                                 index: selects.len() + idx,
                                 label: label.clone(),
@@ -326,14 +336,14 @@ impl BrowserEngine {
             .await.unwrap_or_default();
         
         for (idx, filter) in filters.iter().enumerate().take(10) { // Limit to first 10 filters
-            let label = filter.get_attribute("aria-label").await.ok().flatten()
-                .or_else(|| filter.get_attribute("name").await.ok().flatten());
+            let label = filter.attr("aria-label").await.ok().flatten();
             
             if let Ok(_) = filter.click().await {
                 sleep(Duration::from_millis(1000)).await;
                 self.wait_for_page_ready(driver).await?;
                 
-                let content = driver.source().await?;
+                let content = driver.source().await
+                            .map_err(|e| Error::Browser(format!("Failed to get page source: {e}")))?;
                 contents.push(FilterContent {
                     index: idx,
                     label,

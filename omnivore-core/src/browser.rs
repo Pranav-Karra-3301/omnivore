@@ -50,13 +50,13 @@ impl BrowserEngine {
             BrowserType::Chrome => {
                 let mut caps = ChromeCapabilities::new();
                 if config.headless {
-                    caps.add_chrome_arg("--headless")?;
+                    caps.add_arg("--headless")?;
                 }
-                caps.add_chrome_arg("--no-sandbox")?;
-                caps.add_chrome_arg("--disable-dev-shm-usage")?;
-                caps.add_chrome_arg("--disable-gpu")?;
-                caps.add_chrome_arg("--window-size=1920,1080")?;
-                caps.add_chrome_arg("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")?;
+                caps.add_arg("--no-sandbox")?;
+                caps.add_arg("--disable-dev-shm-usage")?;
+                caps.add_arg("--disable-gpu")?;
+                caps.add_arg("--window-size=1920,1080")?;
+                caps.add_arg("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")?;
                 
                 WebDriver::new(&driver_url, caps).await
                     .context("Failed to create Chrome WebDriver")?
@@ -64,10 +64,10 @@ impl BrowserEngine {
             BrowserType::Firefox => {
                 let mut caps = FirefoxCapabilities::new();
                 if config.headless {
-                    caps.add_firefox_arg("-headless")?;
+                    caps.add_arg("-headless")?;
                 }
-                caps.add_firefox_arg("-width=1920")?;
-                caps.add_firefox_arg("-height=1080")?;
+                caps.add_arg("-width=1920")?;
+                caps.add_arg("-height=1080")?;
                 
                 WebDriver::new(&driver_url, caps).await
                     .context("Failed to create Firefox WebDriver")?
@@ -111,7 +111,7 @@ impl BrowserEngine {
             
             match self.driver.execute(script, vec![]).await {
                 Ok(ret) => {
-                    if let Ok(ready) = ret.value().as_bool() {
+                    if let Some(ready) = ret.json().as_bool() {
                         if ready {
                             debug!("Page is ready");
                             break;
@@ -123,7 +123,7 @@ impl BrowserEngine {
                     // Check basic readyState
                     let basic_script = "return document.readyState === 'complete';";
                     if let Ok(ret) = self.driver.execute(basic_script, vec![]).await {
-                        if let Ok(ready) = ret.value().as_bool() {
+                        if let Some(ready) = ret.json().as_bool() {
                             if ready {
                                 break;
                             }

@@ -34,6 +34,9 @@ pub enum Error {
 
     #[error("Browser automation error: {0}")]
     Browser(String),
+    
+    #[error("WebDriver error: {0}")]
+    WebDriver(#[from] thirtyfour::error::WebDriverError),
 
     #[error("Invalid configuration: {0}")]
     InvalidConfig(String),

@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use std::hint::black_box;
 use omnivore_core::crawler::frontier::Frontier;
+use std::hint::black_box;
 use url::Url;
 
 fn frontier_benchmark(c: &mut Criterion) {

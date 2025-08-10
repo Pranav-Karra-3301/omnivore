@@ -26,25 +26,44 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 
 ### Installation
 
+#### Quick Install (Linux/macOS)
+```bash
+# Install latest release
+curl -sSfL https://raw.githubusercontent.com/Pranav-Karra-3301/omnivore/master/install.sh | sh
+
+# Or with specific version
+curl -sSfL https://raw.githubusercontent.com/Pranav-Karra-3301/omnivore/master/install.sh | sh -s -- --version v0.1.0-beta
+```
+
 #### Homebrew (macOS/Linux)
 ```bash
-# Install from tap (once published)
+# Add tap and install
 brew tap Pranav-Karra-3301/omnivore
 brew install omnivore
+```
 
-# Or install from source
-git clone https://github.com/Pranav-Karra-3301/omnivore.git
-cd omnivore
-brew install --build-from-source ./Formula/omnivore.rb
+#### Download Binary
+Download pre-built binaries from the [releases page](https://github.com/Pranav-Karra-3301/omnivore/releases):
+- Linux: `omnivore-v0.1.0-beta-x86_64-unknown-linux-gnu.tar.gz`
+- macOS Intel: `omnivore-v0.1.0-beta-x86_64-apple-darwin.tar.gz`
+- macOS Apple Silicon: `omnivore-v0.1.0-beta-aarch64-apple-darwin.tar.gz`
+
+Extract and install:
+```bash
+tar -xzf omnivore-*.tar.gz
+cd omnivore-*/
+sudo install -m 755 omnivore /usr/local/bin/
+sudo install -m 755 omnivore-api /usr/local/bin/
 ```
 
 #### From Source
 ```bash
-# Clone the repository
+# Using Cargo
+cargo install --git https://github.com/Pranav-Karra-3301/omnivore --tag v0.1.0-beta
+
+# Or build manually
 git clone https://github.com/Pranav-Karra-3301/omnivore.git
 cd omnivore
-
-# Build the project
 cargo build --release
 
 # Install locally

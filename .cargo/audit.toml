@@ -1,0 +1,10 @@
+# Configuration for cargo-audit
+
+[advisories]
+# Ignore the rsa vulnerability from sqlx-mysql as we don't use MySQL
+# and there's no fixed version available yet
+# Ignore paste unmaintained warning as it's still used by dependencies
+ignore = [
+    "RUSTSEC-2023-0071", # rsa Marvin Attack - medium severity, no fix available
+    "RUSTSEC-2024-0436", # paste unmaintained - warning only, used by ratatui and thirtyfour
+]

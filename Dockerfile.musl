@@ -1,0 +1,82 @@
+# Multi-stage build for Omnivore with musl for static linking
+FROM rust:1.88-alpine as builder
+
+# Install build dependencies for Alpine (musl)
+RUN apk add --no-cache \
+    musl-dev \
+    pkgconfig \
+    openssl-dev \
+    openssl-libs-static
+
+# Set the target
+ENV RUSTFLAGS="-C target-feature=-crt-static"
+ENV PKG_CONFIG_ALLOW_CROSS=1
+ENV OPENSSL_STATIC=1
+ENV OPENSSL_DIR=/usr
+
+# Set working directory
+WORKDIR /app
+
+# Copy Cargo files
+COPY Cargo.toml Cargo.lock ./
+COPY omnivore-core/Cargo.toml ./omnivore-core/
+COPY omnivore-cli/Cargo.toml ./omnivore-cli/
+COPY omnivore-api/Cargo.toml ./omnivore-api/
+
+# Create dummy source files to cache dependencies
+RUN mkdir -p omnivore-core/src omnivore-cli/src omnivore-api/src \
+    && echo "fn main() {}" > omnivore-cli/src/main.rs \
+    && echo "fn main() {}" > omnivore-api/src/main.rs \
+    && echo "pub fn dummy() {}" > omnivore-core/src/lib.rs
+
+# Build dependencies
+RUN cargo build --release --workspace
+RUN rm -rf omnivore-*/src
+
+# Copy actual source code
+COPY omnivore-core/src ./omnivore-core/src
+COPY omnivore-cli/src ./omnivore-cli/src  
+COPY omnivore-api/src ./omnivore-api/src
+COPY configs ./configs
+
+# Build the actual application with static linking
+RUN touch omnivore-*/src/lib.rs omnivore-*/src/main.rs \
+    && cargo build --release --workspace
+
+# Runtime stage - using scratch for minimal image
+FROM alpine:3.20
+
+# Install minimal runtime dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    wget \
+    curl
+
+# Create omnivore user
+RUN adduser -D -u 1001 omnivore
+
+# Copy binaries and config
+COPY --from=builder /app/target/release/omnivore /usr/local/bin/
+COPY --from=builder /app/target/release/omnivore-api /usr/local/bin/
+COPY --from=builder /app/configs /etc/omnivore/configs
+
+# Create data directory
+RUN mkdir -p /var/lib/omnivore && chown omnivore:omnivore /var/lib/omnivore
+
+# Switch to non-root user
+USER omnivore
+WORKDIR /home/omnivore
+
+# Set environment variables
+ENV OMNIVORE_DATA_DIR=/var/lib/omnivore
+ENV OMNIVORE_CONFIG=/etc/omnivore/configs/crawler.toml
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Expose API port
+EXPOSE 3000
+
+# Default command
+CMD ["omnivore-api"]

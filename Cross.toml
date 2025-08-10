@@ -1,0 +1,38 @@
+# Configuration for cross-compilation tool
+# https://github.com/cross-rs/cross
+
+[build]
+# Use pre-built Docker images optimized for cross-compilation
+pre-build = []
+
+[target.x86_64-unknown-linux-musl]
+# Use Alpine Linux for musl builds
+image = "ghcr.io/cross-rs/x86_64-unknown-linux-musl:main"
+
+[target.aarch64-unknown-linux-musl]
+# Use Alpine Linux for ARM64 musl builds
+image = "ghcr.io/cross-rs/aarch64-unknown-linux-musl:main"
+
+[target.x86_64-unknown-linux-gnu]
+# Standard GNU Linux builds
+image = "ghcr.io/cross-rs/x86_64-unknown-linux-gnu:main"
+
+[target.aarch64-unknown-linux-gnu]
+# ARM64 GNU Linux builds
+image = "ghcr.io/cross-rs/aarch64-unknown-linux-gnu:main"
+
+[target.x86_64-apple-darwin]
+# macOS x86_64 builds
+image = "ghcr.io/cross-rs/x86_64-apple-darwin:main"
+
+[target.aarch64-apple-darwin]
+# macOS ARM64 (Apple Silicon) builds
+image = "ghcr.io/cross-rs/aarch64-apple-darwin:main"
+
+# Environment variables for all targets
+[build.env]
+passthrough = [
+    "RUST_BACKTRACE",
+    "RUST_LOG",
+    "CARGO_TERM_COLOR",
+]

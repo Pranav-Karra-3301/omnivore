@@ -6,6 +6,9 @@ pub mod intelligence;
 pub mod parser;
 pub mod storage;
 pub mod table_extractor;
+pub mod config;
+pub mod ai;
+pub mod detector;
 
 #[cfg(feature = "browser")]
 pub mod browser;

@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::{Write, Read as IORead};
 
 mod git;
+mod setup;
 
 #[derive(Debug, Clone, clap::ValueEnum)]
 enum OutputFormat {
@@ -68,6 +69,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Setup {
+        #[arg(help = "Interactive setup wizard for Omnivore configuration")]
+        _placeholder: Option<String>,
+    },
     Crawl {
         #[arg(help = "URL to start crawling from")]
         url: String,
@@ -114,6 +119,15 @@ enum Commands {
         
         #[arg(long, help = "Interact with dropdowns and filters (requires --browser)")]
         interact: bool,
+        
+        #[arg(long, help = "Automatic detection and extraction of all elements")]
+        auto: bool,
+        
+        #[arg(long, value_name = "QUERY", help = "Natural language extraction query (requires OpenAI API)")]
+        ai: Option<String>,
+        
+        #[arg(long, help = "Use extraction template")]
+        template: Option<String>,
     },
 
     Parse {
@@ -162,6 +176,9 @@ async fn main() -> Result<()> {
         .init();
 
     match cli.command {
+        Commands::Setup { .. } => {
+            setup::run_setup().await?;
+        }
         Commands::Crawl {
             url,
             workers,
@@ -177,8 +194,11 @@ async fn main() -> Result<()> {
             extract_tables,
             browser,
             interact,
+            auto,
+            ai,
+            template,
         } => {
-            crawl_command(url, workers, depth, output, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables, browser, interact).await?;
+            crawl_command(url, workers, depth, output, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables, browser, interact, auto, ai, template).await?;
         }
         Commands::Parse { file, rules, output } => {
             parse_command(file, rules, output).await?;
@@ -212,6 +232,11 @@ fn print_banner() {
     println!("{}", ascii_art.purple().bold());
     println!("{}", format!("v{}", env!("CARGO_PKG_VERSION")).purple());
     println!("{}", "The Universal Web Scraper & Code Extractor".bright_white());
+    
+    // Show API key status
+    let (configured, status) = setup::check_api_key_status();
+    println!("{}", status);
+    
     println!();
 }
 
@@ -334,6 +359,9 @@ async fn crawl_command(
     extract_tables: bool,
     browser: bool,
     interact: bool,
+    auto: bool,
+    ai: Option<String>,
+    template: Option<String>,
 ) -> Result<()> {
     println!("{}", "🕸️  Omnivore Web Crawler".bold().cyan());
     println!();
@@ -354,6 +382,22 @@ async fn crawl_command(
         if interact {
             println!("  Interactive mode: {}", "enabled (will interact with dropdowns/filters)".green());
         }
+    }
+    
+    // Auto mode overrides individual settings
+    let (auto_tables, auto_interact, auto_browser) = if auto {
+        println!("  Auto mode: {}", "enabled (automatic detection and extraction)".green());
+        (true, true, true)
+    } else {
+        (extract_tables, interact, browser)
+    };
+    
+    if let Some(ref ai_query) = ai {
+        println!("  AI mode: {}", format!("\"{}\"", ai_query).cyan());
+    }
+    
+    if let Some(ref template_name) = template {
+        println!("  Template: {}", template_name.yellow());
     }
     
     println!();

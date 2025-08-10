@@ -38,6 +38,9 @@ toml = { workspace = true }
 # Error handling
 anyhow = { workspace = true }
 
+# HTTP client
+reqwest = { workspace = true }
+
 # Logging
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
@@ -54,6 +57,8 @@ tui-input = "0.11"
 # Configuration
 config = "0.14"
 dirs = "5.0"
+dialoguer = "0.11"
+which = "7.0"
 
 # Git functionality
 git2 = { version = "0.19", features = ["vendored-openssl"] }

@@ -11,9 +11,17 @@
 
 **Universal Rust Web Crawler & Knowledge Graph Builder**
 
+> ⚠️ **Warning**: This project is mostly Vibecoded and made for personal use. It may contain experimental features, incomplete implementations, and unconventional approaches. Use at your own risk and discretion. Production use is not recommended without thorough testing.
+
 A high-performance, parallel web crawler and knowledge graph system built in Rust, designed for scale and intelligence.
 
 ## Features
+
+### 🤖 AI-Powered Intelligence
+- **Natural Language Queries**: Describe what you want in plain English
+- **OpenAI Integration**: Powered by GPT-4 for intelligent extraction
+- **Smart Detection**: Automatically identifies tables, forms, dropdowns, pagination
+- **Auto Mode**: One flag to extract everything intelligently
 
 ### Web Crawling
 - **Parallel Crawling**: Async/await with Tokio, supporting 1000+ concurrent connections
@@ -39,6 +47,12 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 - **Resume Capability**: Continue interrupted crawls from last checkpoint (coming soon)
 
 ## Quick Start
+
+### Initial Setup
+```bash
+# Configure Omnivore (API keys, defaults, etc.)
+omnivore setup
+```
 
 ### Installation
 
@@ -98,7 +112,21 @@ docker-compose up -d
 ### Basic Usage
 
 ```bash
-# Crawl a website with default settings
+# First time setup
+omnivore setup
+
+# Auto mode - detects and extracts everything automatically
+omnivore crawl https://example.com --auto
+
+# Natural language extraction
+omnivore crawl https://shop.com --ai "get all product names, prices, and images"
+omnivore crawl https://university.edu --ai "extract course codes, titles, and prerequisites"
+
+# Use predefined templates
+omnivore crawl https://shop.com --template ecommerce
+omnivore crawl https://news.com --template news
+
+# Traditional usage
 omnivore crawl https://example.com
 
 # Crawl with organized output and table extraction
@@ -200,12 +228,21 @@ omnivore git . --max-file-size 10485760 --json
 
 ## CLI Reference
 
+### Setup Command
+```bash
+omnivore setup
+```
+Interactive configuration wizard for API keys, defaults, and templates.
+
 ### Crawl Command
 ```bash
 omnivore crawl [URL] [OPTIONS]
 ```
 
 **Options:**
+- `--auto`: Automatic detection and extraction of everything
+- `--ai <QUERY>`: Natural language extraction query
+- `--template <NAME>`: Use predefined extraction template
 - `--workers <N>`: Number of parallel workers (default: 10)
 - `--depth <N>`: Maximum crawl depth (default: 5)
 - `--output <FILE>`: Output file path

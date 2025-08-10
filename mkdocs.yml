@@ -1,49 +1,151 @@
 site_name: Omnivore
-site_description: Universal Rust Web Crawler & Knowledge Graph Builder
+site_description: High-performance web crawler and content extraction framework for Rust
 site_url: https://omnivore.readthedocs.io
+site_author: Omnivore Team
 repo_url: https://github.com/Pranav-Karra-3301/omnivore
 repo_name: Pranav-Karra-3301/omnivore
+edit_uri: edit/master/docs/
+copyright: Copyright &copy; 2024 Omnivore Team
+
 theme:
   name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
   features:
     - navigation.instant
-    - navigation.expand
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
     - search.highlight
+    - search.share
+    - content.tabs.link
+    - content.code.annotate
     - content.code.copy
+    - toc.follow
+
 markdown_extensions:
+  - abbr
   - admonition
-  - toc:
-      permalink: true
-  - tables
+  - attr_list
   - def_list
   - footnotes
-  - codehilite
+  - meta
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - codehilite:
+      guess_lang: false
+
+plugins:
+  - search:
+      separator: '[\s\-\.]+'
+      lang:
+        - en
+  - minify:
+      minify_html: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Pranav-Karra-3301/omnivore
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+
 nav:
-  - Overview: index.md
-  - Installation: installation.md
-  - Quickstart: quickstart.md
-  - CLI: cli.md
-  - Configuration: configuration.md
-  - API:
-      - REST: api/rest.md
-      - GraphQL: api/graphql.md
-  - Architecture:
-      - Overview: architecture/overview.md
-      - Crawler: architecture/crawler.md
-      - Parser: architecture/parser.md
-      - Knowledge Graph: architecture/knowledge-graph.md
-      - Storage: architecture/storage.md
-  - Guides:
+  - Home:
+    - Overview: index.md
+    - Quickstart: quickstart.md
+    - Installation: installation.md
+    - Configuration: configuration.md
+    
+  - User Guide:
+    - CLI Reference: cli.md
+    - Examples:
+      - Basic Crawl: examples/basic-crawl.md
+    - Guides:
       - Writing Extractors: guides/extractors.md
       - Politeness & robots.txt: guides/politeness.md
-  - Deployment:
-      - Docker: deployment/docker.md
-      - Homebrew: deployment/homebrew.md
-  - Development:
-      - Build & Test: development/build.md
-      - Contributing: development/contributing.md
-  - Examples:
-      - Basic Crawl: examples/basic-crawl.md
-  - Tutorials:
+    - Tutorials:
       - Build a Graph from a Site: tutorials/graph-from-site.md
+      
+  - API:
+    - REST API: api/rest.md
+    - GraphQL API: api/graphql.md
+    
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Components:
+      - Crawler: architecture/crawler.md
+      - Parser: architecture/parser.md
+      - Storage: architecture/storage.md
+      - Knowledge Graph: architecture/knowledge-graph.md
+      
+  - Deployment:
+    - Docker: deployment/docker.md
+    - Homebrew: deployment/homebrew.md
+    
+  - Development:
+    - Build & Test: development/build.md
+    - Contributing: development/contributing.md
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

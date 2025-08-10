@@ -1,48 +1,217 @@
 # CLI Reference
 
-The CLI is powered by `clap` and exposes several subcommands.
+The Omnivore CLI provides a command-line interface for web crawling and content extraction.
 
-## Global options
-- `-v, --verbose`: verbose logging
-- `-c, --config <FILE>`: path to configuration file
-
-## `crawl`
-Crawl starting from a URL.
+## Installation
 
 ```bash
-omnivore crawl <url> [--workers N] [--depth N] [--output FILE] [--respect-robots] [--delay MS]
+cargo install omnivore
 ```
-- **url**: starting URL
-- **--workers**: number of concurrent workers (default 10)
-- **--depth**: maximum crawl depth (default 5)
-- **--output**: write final stats to a file (JSON)
-- **--respect-robots**: honor robots.txt
-- **--delay**: delay between requests in ms (default 100)
 
-## `parse`
-Parse an HTML file with optional rules.
+## Global Options
+
+- `-v, --verbose`: Enable verbose logging
+- `-c, --config <FILE>`: Path to TOML configuration file
+- `-h, --help`: Print help information
+- `-V, --version`: Print version information
+
+## Commands
+
+### `crawl` - Web Crawling
+
+Start a web crawl from one or more seed URLs.
 
 ```bash
-omnivore parse <file> [--rules FILE]
+omnivore crawl <URL> [OPTIONS]
 ```
 
-## `graph`
-Build a knowledge graph from crawl results.
+#### Arguments
+- `<URL>`: Starting URL(s) to crawl
+
+#### Options
+- `--workers <N>`: Number of concurrent workers (default: 10, range: 1-100)
+- `--depth <N>`: Maximum crawl depth (default: 5, range: 1-20)
+- `--delay <MS>`: Delay between requests in milliseconds (default: 100)
+- `--output <FILE>`: Export crawl statistics to JSON file
+- `--respect-robots`: Honor robots.txt directives (currently fetches but doesn't parse)
+- `--user-agent <STRING>`: Custom User-Agent string
+
+#### Examples
+
+Basic crawl:
+```bash
+omnivore crawl https://example.com
+```
+
+Deep crawl with more workers:
+```bash
+omnivore crawl https://example.com --depth 10 --workers 20
+```
+
+Polite crawl with delays:
+```bash
+omnivore crawl https://example.com --delay 1000 --respect-robots
+```
+
+Export statistics:
+```bash
+omnivore crawl https://example.com --output stats.json
+```
+
+### `parse` - HTML Parsing
+
+Parse HTML content and extract structured data.
 
 ```bash
-omnivore graph <input> [--output FILE]
+omnivore parse <FILE> [OPTIONS]
 ```
 
-## `stats`
-Display crawl statistics for a session.
+#### Arguments
+- `<FILE>`: Path to HTML file
+
+#### Options
+- `--rules <FILE>`: Path to extraction rules file (JSON)
+- `--output <FILE>`: Write extracted data to file
+
+#### Examples
+
+Basic parsing:
+```bash
+omnivore parse page.html
+```
+
+With extraction rules:
+```bash
+omnivore parse page.html --rules rules.json
+```
+
+### `graph` - Graph Operations (⚠️ Not Implemented)
+
+Build knowledge graphs from crawled data.
 
 ```bash
-omnivore stats [session]
+omnivore graph <INPUT> [OPTIONS]
 ```
 
-## `generate-completions`
-Generate shell completions.
+**Note**: This command currently only prints placeholder messages. Graph functionality is under development.
+
+### `stats` - Statistics (⚠️ Limited Implementation)
+
+Display crawl session statistics.
 
 ```bash
-omnivore generate-completions <bash|zsh|fish|powershell>
+omnivore stats [SESSION]
 ```
+
+**Note**: This command has limited functionality. Session tracking is not fully implemented.
+
+### `generate-completions` - Shell Completions
+
+Generate shell completion scripts.
+
+```bash
+omnivore generate-completions <SHELL>
+```
+
+#### Supported Shells
+- `bash`
+- `zsh`
+- `fish`
+- `powershell`
+
+#### Installation Examples
+
+Bash:
+```bash
+omnivore generate-completions bash > /usr/local/etc/bash_completion.d/omnivore
+```
+
+Zsh:
+```bash
+omnivore generate-completions zsh > ~/.zsh/completions/_omnivore
+```
+
+Fish:
+```bash
+omnivore generate-completions fish > ~/.config/fish/completions/omnivore.fish
+```
+
+## Configuration File
+
+Use a TOML configuration file to set default values:
+
+```bash
+omnivore -c config.toml crawl https://example.com
+```
+
+See [Configuration](configuration.md) for file format details.
+
+## Exit Codes
+
+- `0`: Success
+- `1`: General error
+- `2`: Invalid arguments
+- `3`: Configuration error
+- `4`: Network error
+
+## Environment Variables
+
+- `OMNIVORE_CONFIG`: Default configuration file path
+- `OMNIVORE_DATA_DIR`: Data storage directory (default: `~/.omnivore`)
+- `RUST_LOG`: Logging level (trace, debug, info, warn, error)
+
+## Common Use Cases
+
+### 1. Quick Site Snapshot
+```bash
+omnivore crawl https://example.com --depth 2 --output snapshot.json
+```
+
+### 2. Respectful Crawling
+```bash
+omnivore crawl https://example.com --workers 2 --delay 2000 --respect-robots
+```
+
+### 3. Deep Site Analysis
+```bash
+omnivore crawl https://example.com --depth 10 --workers 20 --output analysis.json
+```
+
+### 4. Parse Downloaded Content
+```bash
+# First download
+curl https://example.com > page.html
+# Then parse
+omnivore parse page.html
+```
+
+## Troubleshooting
+
+### Issue: Crawl seems stuck
+- Reduce worker count: `--workers 2`
+- Increase delay: `--delay 1000`
+- Check network connectivity
+
+### Issue: Too many requests error
+- Increase delay between requests
+- Reduce worker count
+- Check if site has rate limiting
+
+### Issue: Memory usage high
+- Reduce worker count
+- Decrease crawl depth
+- Use configuration file to limit queue size
+
+## Performance Tips
+
+1. **Worker Count**: Start with 5-10 workers and adjust based on site response
+2. **Delays**: Use at least 100ms delay for polite crawling
+3. **Depth**: Keep depth low (2-3) for initial exploration
+4. **Output**: Use `--output` to save results for later analysis
+
+## Limitations
+
+- Robots.txt parsing not fully implemented (fetches but doesn't parse rules)
+- No JavaScript rendering (static HTML only)
+- Session management not persistent across runs
+- Graph and stats commands have limited functionality

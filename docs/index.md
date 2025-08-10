@@ -1,12 +1,74 @@
 # Omnivore
 
-Universal Rust Web Crawler & Knowledge Graph Builder.
+A high-performance web crawler and content extraction framework written in Rust.
 
-- Parallel crawling with Tokio
-- Static and dynamic (browser) crawling
-- Smart content extraction
-- Knowledge graph building and querying
-- Politeness engine (rate limiting, robots.txt)
-- Extensible, modular architecture
+## Features
 
-Get started in minutes with the Quickstart, and see the CLI and API docs for detailed usage.
+### ✅ Implemented
+- **Parallel web crawling** with configurable concurrency
+- **HTML content extraction** using CSS selectors and rules
+- **Metadata extraction** (OpenGraph, Twitter Cards, JSON-LD)
+- **Politeness controls** with rate limiting and delays
+- **RocksDB storage** for crawled content
+- **REST API** for programmatic access
+- **CLI interface** with progress tracking
+- **TOML configuration** for flexible setup
+
+### 🚧 In Development
+- Knowledge graph construction
+- Advanced browser automation
+- Vector embeddings and search
+- Entity and relation extraction
+- Robots.txt rule parsing
+
+## Quick Links
+
+- [Installation](installation.md) - Get Omnivore running on your system
+- [Quickstart](quickstart.md) - Start crawling in 5 minutes
+- [CLI Reference](cli.md) - Command-line interface documentation
+- [API Documentation](api/rest.md) - REST API endpoints
+- [Configuration](configuration.md) - Customize crawler behavior
+
+## Use Cases
+
+Omnivore is ideal for:
+- **Web scraping** - Extract structured data from websites
+- **Content archival** - Save website content locally
+- **Data mining** - Collect data for analysis
+- **Site monitoring** - Track changes over time
+- **Research** - Gather information systematically
+
+## Architecture Overview
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│     CLI     │────▶│    Core     │────▶│   Storage   │
+└─────────────┘     │   Crawler   │     │  (RocksDB)  │
+                    └─────────────┘     └─────────────┘
+┌─────────────┐            │
+│   REST API  │────────────┘
+└─────────────┘
+```
+
+## Getting Started
+
+1. **Install Omnivore** using Cargo:
+   ```bash
+   cargo install omnivore
+   ```
+
+2. **Run your first crawl**:
+   ```bash
+   omnivore crawl https://example.com --depth 2
+   ```
+
+3. **Start the API server**:
+   ```bash
+   omnivore-api
+   ```
+
+## Project Status
+
+Omnivore is actively developed with a focus on stability and performance. The core crawling functionality is production-ready, while advanced features like knowledge graphs are under development.
+
+See our [GitHub repository](https://github.com/Pranav-Karra-3301/omnivore) for the latest updates.

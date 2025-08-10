@@ -20,8 +20,7 @@ impl BrowserEngine {
                 Ok(())
             }
             Err(e) => Err(Error::Browser(format!(
-                "Failed to connect to browser: {}",
-                e
+                "Failed to connect to browser: {e}"
             ))),
         }
     }
@@ -35,14 +34,14 @@ impl BrowserEngine {
         driver
             .goto(url.as_str())
             .await
-            .map_err(|e| Error::Browser(format!("Navigation failed: {}", e)))?;
+            .map_err(|e| Error::Browser(format!("Navigation failed: {e}")))?;
 
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
         let content = driver
             .source()
             .await
-            .map_err(|e| Error::Browser(format!("Failed to get page source: {}", e)))?;
+            .map_err(|e| Error::Browser(format!("Failed to get page source: {e}")))?;
 
         let links = self.extract_links_js(driver, &url).await?;
 
@@ -67,7 +66,7 @@ impl BrowserEngine {
         let links_value = driver
             .execute(script, vec![])
             .await
-            .map_err(|e| Error::Browser(format!("Script execution failed: {}", e)))?;
+            .map_err(|e| Error::Browser(format!("Script execution failed: {e}")))?;
 
         let mut links = Vec::new();
 
@@ -91,7 +90,7 @@ impl BrowserEngine {
             driver
                 .quit()
                 .await
-                .map_err(|e| Error::Browser(format!("Failed to quit browser: {}", e)))?;
+                .map_err(|e| Error::Browser(format!("Failed to quit browser: {e}")))?;
         }
         Ok(())
     }
@@ -100,7 +99,7 @@ impl BrowserEngine {
 impl Drop for BrowserEngine {
     fn drop(&mut self) {
         if let Some(driver) = self.driver.take() {
-            let _ = tokio::task::spawn(async move {
+            tokio::task::spawn(async move {
                 let _ = driver.quit().await;
             });
         }

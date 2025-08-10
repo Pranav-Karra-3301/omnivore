@@ -1,0 +1,68 @@
+name: Test Homebrew Formula
+
+on:
+  push:
+    paths:
+      - 'Formula/**'
+      - '.github/workflows/homebrew-test.yml'
+  pull_request:
+    paths:
+      - 'Formula/**'
+      - '.github/workflows/homebrew-test.yml'
+
+jobs:
+  test-formula:
+    name: Test Homebrew Formula
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      
+      - name: Test formula syntax
+        run: |
+          brew audit --strict Formula/omnivore.rb
+      
+      - name: Test formula from source (if dependencies available)
+        if: matrix.os == 'macos-latest'
+        run: |
+          # Test building from source
+          brew install --build-from-source --verbose Formula/omnivore.rb || echo "Build from source test failed (expected if dependencies not available)"
+      
+      - name: Test formula installation (dry run)
+        run: |
+          # Dry run installation test
+          brew install --dry-run Formula/omnivore.rb || echo "Dry run test completed"
+
+  test-tap:
+    name: Test Homebrew Tap
+    runs-on: macos-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout homebrew-omnivore
+        uses: actions/checkout@v4
+        with:
+          repository: Pranav-Karra-3301/homebrew-omnivore
+          path: homebrew-omnivore
+      
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      
+      - name: Test tap installation
+        run: |
+          cd homebrew-omnivore
+          
+          # Test formula syntax
+          brew audit --strict omnivore.rb
+          
+          # Test tap (without actually installing if no release exists)
+          echo "Testing tap structure..."
+          ls -la

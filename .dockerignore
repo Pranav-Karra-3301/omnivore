@@ -1,40 +1,72 @@
-# Git
+# Ignore build artifacts
+target/
+**/target/
+
+# Ignore Git
 .git/
 .gitignore
 
-# Rust
-target/
-Cargo.lock
+# Ignore documentation that's not needed in container
+docs-site/
+docs/
+*.md
+!README.md
 
-# IDE
+# Ignore development files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS
+# Ignore test files
+tests/
+**/tests/
+benches/
+**/benches/
+
+# Ignore CI/CD files
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Ignore package files
+*.crate
+Cargo.lock.bak
+
+# Ignore homebrew files
+Formula/
+homebrew-*/
+
+# Ignore monitoring configs (we copy them separately)
+monitoring/
+
+# Ignore scripts not needed in container
+scripts/
+!scripts/init-db.sql
+
+# Ignore temporary files
+.tmp/
+tmp/
+temp/
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore OS files
 .DS_Store
 Thumbs.db
 
-# Logs
+# Ignore logs
 *.log
 logs/
 
-# Data
+# Ignore development data
 data/
+*.db
+*.sqlite
 
-# Documentation
-docs/
-README.md
-
-# CI/CD
-.github/
-
-# Homebrew
-Formula/
-
-# Scripts (not needed in container)
-scripts/
-
-# Coverage reports
-coverage/
+# Ignore cache
+.cache/
+cache/

@@ -43,6 +43,8 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
+    wget \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create omnivore user
@@ -66,7 +68,7 @@ ENV OMNIVORE_CONFIG=/etc/omnivore/configs/crawler.toml
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 # Expose API port
 EXPOSE 3000

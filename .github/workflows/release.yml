@@ -4,130 +4,262 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.1.0)'
+        required: true
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Omnivore ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          body: |
+            ## What's Changed
+            
+            ### Features
+            - Universal web crawler with async/parallel processing
+            - Knowledge graph builder with intelligent entity extraction
+            - REST and GraphQL API endpoints
+            - Configurable politeness and rate limiting
+            
+            ### Installation
+            
+            #### Homebrew
+            ```bash
+            brew tap Pranav-Karra-3301/omnivore
+            brew install omnivore
+            ```
+            
+            #### Docker
+            ```bash
+            docker run -p 3000:3000 ghcr.io/pranav-karra-3301/omnivore:${{ steps.get_version.outputs.version }}
+            ```
+            
+            #### Binary Downloads
+            Download the appropriate binary for your platform below.
+
+  build-binaries:
     name: Build ${{ matrix.target }}
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            archive: tar.gz
-          - os: ubuntu-latest  
-            target: aarch64-unknown-linux-gnu
-            archive: tar.gz
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            archive: tar.gz
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            archive: tar.gz
-
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: true
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            cross: false
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            cross: false
+    
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-
-      - name: Setup cross compilation
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+      
+      - name: Install cross-compilation tools
+        if: matrix.cross
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build CLI
+          cargo install cross --git https://github.com/cross-rs/cross
+      
+      - name: Build binary
         run: |
-          cargo build --release --target ${{ matrix.target }} --bin omnivore
-          
-      - name: Build API
-        run: |
-          cargo build --release --target ${{ matrix.target }} --bin omnivore-api
-
-      - name: Create archive
-        run: |
-          mkdir -p release
-          cp target/${{ matrix.target }}/release/omnivore release/
-          cp target/${{ matrix.target }}/release/omnivore-api release/
-          cp configs/crawler.toml release/
-          cp README.md release/
-          cp -r configs release/ || true
-          
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a omnivore-${{ github.ref_name }}-${{ matrix.target }}.zip release/*
+          if [ "${{ matrix.cross }}" = "true" ]; then
+            cross build --release --target ${{ matrix.target }}
           else
-            tar czf omnivore-${{ github.ref_name }}-${{ matrix.target }}.tar.gz -C release .
+            cargo build --release --target ${{ matrix.target }}
           fi
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: omnivore-${{ github.ref_name }}-${{ matrix.target }}
-          path: omnivore-${{ github.ref_name }}-${{ matrix.target }}.*
-
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: false
-          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
-          generate_release_notes: true
-          files: artifacts/**/*
+      
+      - name: Create release archive
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          TARGET="${{ matrix.target }}"
+          ARCHIVE_NAME="omnivore-${VERSION}-${TARGET}"
+          
+          mkdir -p "${ARCHIVE_NAME}"
+          
+          # Copy binaries
+          cp target/${TARGET}/release/omnivore "${ARCHIVE_NAME}/"
+          cp target/${TARGET}/release/omnivore-api "${ARCHIVE_NAME}/"
+          
+          # Copy configuration and documentation
+          cp -r configs "${ARCHIVE_NAME}/"
+          cp README.md "${ARCHIVE_NAME}/"
+          cp -r docs "${ARCHIVE_NAME}/" || true
+          
+          # Create license file
+          cat > "${ARCHIVE_NAME}/LICENSE" << 'EOF'
+          Licensed under either of
+          
+           * Apache License, Version 2.0
+             (http://www.apache.org/licenses/LICENSE-2.0)
+           * MIT license
+             (http://opensource.org/licenses/MIT)
+          
+          at your option.
+          EOF
+          
+          # Create shell completions if script exists
+          if [ -f scripts/build-completions.sh ]; then
+            mkdir -p "${ARCHIVE_NAME}/completions"
+            ./scripts/build-completions.sh "${ARCHIVE_NAME}/completions" || true
+          fi
+          
+          # Create tar.gz
+          tar -czf "${ARCHIVE_NAME}.tar.gz" "${ARCHIVE_NAME}"
+          
+          # Calculate SHA256
+          sha256sum "${ARCHIVE_NAME}.tar.gz" > "${ARCHIVE_NAME}.tar.gz.sha256"
+          
+          echo "ARCHIVE_NAME=${ARCHIVE_NAME}" >> $GITHUB_ENV
+          echo "ARCHIVE_FILE=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_ENV
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.ARCHIVE_FILE }}
+          asset_name: ${{ env.ARCHIVE_FILE }}
+          asset_content_type: application/gzip
+      
+      - name: Upload SHA256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.ARCHIVE_FILE }}.sha256
+          asset_name: ${{ env.ARCHIVE_FILE }}.sha256
+          asset_content_type: text/plain
+
+  build-docker:
+    name: Build and Push Docker Image
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   update-homebrew:
     name: Update Homebrew Formula
-    needs: release
+    needs: [create-release, build-binaries]
     runs-on: ubuntu-latest
-    if: '!contains(github.ref_name, ''alpha'') && !contains(github.ref_name, ''beta'') && !contains(github.ref_name, ''rc'')'
+    if: github.repository == 'Pranav-Karra-3301/omnivore'
     steps:
-      - name: Checkout
+      - name: Checkout homebrew-omnivore repository
         uses: actions/checkout@v4
-
+        with:
+          repository: Pranav-Karra-3301/homebrew-omnivore
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-omnivore
+      
+      - name: Download release assets for SHA calculation
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          cd homebrew-omnivore
+          
+          # Download all SHA256 files
+          for target in x86_64-apple-darwin aarch64-apple-darwin x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
+            curl -sL "https://github.com/Pranav-Karra-3301/omnivore/releases/download/${VERSION}/omnivore-${VERSION}-${target}.tar.gz.sha256" \
+              -o "${target}.sha256"
+          done
+          
+          # Extract SHA256 values
+          ARM64_MAC_SHA=$(cut -d' ' -f1 aarch64-apple-darwin.sha256)
+          X86_64_MAC_SHA=$(cut -d' ' -f1 x86_64-apple-darwin.sha256)
+          ARM64_LINUX_SHA=$(cut -d' ' -f1 aarch64-unknown-linux-gnu.sha256)
+          X86_64_LINUX_SHA=$(cut -d' ' -f1 x86_64-unknown-linux-gnu.sha256)
+          
+          echo "ARM64_MAC_SHA=${ARM64_MAC_SHA}" >> $GITHUB_ENV
+          echo "X86_64_MAC_SHA=${X86_64_MAC_SHA}" >> $GITHUB_ENV
+          echo "ARM64_LINUX_SHA=${ARM64_LINUX_SHA}" >> $GITHUB_ENV
+          echo "X86_64_LINUX_SHA=${X86_64_LINUX_SHA}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION#v}" >> $GITHUB_ENV
+      
       - name: Update Homebrew formula
         run: |
-          # Download release assets to get SHA256 hashes
-          VERSION=${GITHUB_REF_NAME#v}
+          cd homebrew-omnivore
           
-          # Get SHA256 hashes for each platform
-          for target in x86_64-apple-darwin aarch64-apple-darwin x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
-            echo "Getting SHA256 for $target"
-            wget -q "https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/omnivore-v${VERSION}-${target}.tar.gz"
-            SHA=$(sha256sum "omnivore-v${VERSION}-${target}.tar.gz" | cut -d' ' -f1)
-            echo "${target}_sha=${SHA}" >> $GITHUB_ENV
-          done
-
-      - name: Create PR to homebrew tap
-        run: |
-          echo "Manual step: Update Formula/omnivore.rb with new version and SHA256 hashes"
-          echo "Then create a PR to your homebrew tap repository"
+          # Update omnivore.rb
+          sed -i "s/version \".*\"/version \"${{ env.VERSION }}\"/" omnivore.rb
+          sed -i "s/REPLACE_WITH_ARM64_MAC_SHA256/${{ env.ARM64_MAC_SHA }}/" omnivore.rb
+          sed -i "s/REPLACE_WITH_X86_64_MAC_SHA256/${{ env.X86_64_MAC_SHA }}/" omnivore.rb
+          sed -i "s/REPLACE_WITH_ARM64_LINUX_SHA256/${{ env.ARM64_LINUX_SHA }}/" omnivore.rb
+          sed -i "s/REPLACE_WITH_X86_64_LINUX_SHA256/${{ env.X86_64_LINUX_SHA }}/" omnivore.rb
+          
+          # Commit changes
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add omnivore.rb
+          git commit -m "Update omnivore to ${{ needs.create-release.outputs.version }}"
+          git push

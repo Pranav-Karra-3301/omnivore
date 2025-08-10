@@ -6,6 +6,8 @@ use omnivore_core::{crawler::Crawler, CrawlConfig, PolitenessConfig};
 use std::path::PathBuf;
 use url::Url;
 
+mod git;
+
 #[derive(Parser)]
 #[command(name = "omnivore")]
 #[command(author, version, about = "Universal Rust Web Crawler & Knowledge Graph Builder", long_about = None)]
@@ -67,6 +69,8 @@ enum Commands {
         session: Option<String>,
     },
 
+    Git(git::GitArgs),
+
     #[command(hide = true)]
     GenerateCompletions {
         #[arg(help = "Shell to generate completions for")]
@@ -101,6 +105,9 @@ async fn main() -> Result<()> {
         }
         Commands::Stats { session } => {
             stats_command(session).await?;
+        }
+        Commands::Git(args) => {
+            git::execute_git_command(args).await?;
         }
         Commands::GenerateCompletions { shell } => {
             generate_completions(shell);

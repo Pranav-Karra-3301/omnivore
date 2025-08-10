@@ -9,12 +9,16 @@ homepage.workspace = true
 documentation = "https://docs.rs/omnivore-cli"
 description = "Command-line interface for Omnivore web crawler"
 
+[lib]
+name = "omnivore_cli"
+path = "src/lib.rs"
+
 [[bin]]
 name = "omnivore"
 path = "src/main.rs"
 
 [dependencies]
-omnivore-core = { version = "0.1.0", path = "../omnivore-core" }
+omnivore-core = { version = "0.1.1", path = "../omnivore-core" }
 
 # CLI
 clap = { workspace = true }
@@ -50,6 +54,14 @@ tui-input = "0.11"
 # Configuration
 config = "0.14"
 dirs = "5.0"
+
+# Git functionality
+git2 = { version = "0.19", features = ["vendored-openssl"] }
+ignore = "0.4"
+globset = "0.4"
+tempfile = { workspace = true }
+walkdir = "2.5"
+encoding_rs = "0.8"
 
 [dev-dependencies]
 tempfile = { workspace = true }

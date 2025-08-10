@@ -91,6 +91,10 @@ omnivore parse index.html --rules parser-rules.yaml
 # Build knowledge graph
 omnivore graph crawl-results.json --output graph.db
 
+# Extract code from Git repositories
+omnivore git https://github.com/user/repo.git --output ./extracted-code
+omnivore git . --json > codebase.json  # Extract from local repo
+
 # Start API server
 cargo run --bin omnivore-api
 ```
@@ -130,6 +134,50 @@ omnivore/
 - Schema-based validation
 - Query engine with graph algorithms
 - Export to various graph formats
+
+### Git Code Extractor (v0.1.1)
+Intelligent extraction of meaningful code from Git repositories:
+
+#### Features
+- **Smart Filtering**: Automatically excludes build artifacts, dependencies, and generated files
+- **Gitignore Respect**: Honors repository's `.gitignore` files by default
+- **Flexible Output**: JSON, plain text, or directory structure preservation
+- **Pattern Matching**: Include/exclude files with glob patterns
+- **Binary Detection**: Automatic detection and filtering of binary files
+- **Size Limits**: Configurable file size restrictions
+
+#### Usage Examples
+```bash
+# Extract from remote repository
+omnivore git https://github.com/user/repo.git --output ./code
+
+# Extract specific file types
+omnivore git . --include "src/**/*.rs,Cargo.toml" --json
+
+# Exclude test files
+omnivore git . --exclude "**/*test*,**/*spec*" --txt
+
+# Clone with specific depth
+omnivore git https://github.com/user/repo.git --depth 10 --output ./shallow
+
+# Include binary files and ignore gitignore
+omnivore git . --allow-binary --no-gitignore --output ./full-extract
+
+# Set maximum file size (10MB)
+omnivore git . --max-file-size 10485760 --json
+```
+
+#### Command Options
+- `--include <patterns>`: Include only files matching these patterns (comma-separated)
+- `--exclude <patterns>`: Exclude files matching these patterns (comma-separated)
+- `--no-gitignore`: Don't respect .gitignore files
+- `--output <path>`: Output to directory (preserves structure)
+- `--json`: Output as JSON array of file objects
+- `--txt`: Output as concatenated text with separators
+- `--keep`: Keep temporary clone (for remote repos)
+- `--depth <n>`: Clone depth for remote repositories (default: 1)
+- `--allow-binary`: Include binary files in output
+- `--max-file-size <bytes>`: Maximum file size to include
 
 ## Configuration
 

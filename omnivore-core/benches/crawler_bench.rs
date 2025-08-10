@@ -7,7 +7,7 @@ fn frontier_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let mut frontier = Frontier::new();
             for i in 0..1000 {
-                let url = Url::parse(&format!("https://example.com/page{}", i)).unwrap();
+                let url = Url::parse(&format!("https://example.com/page{i}")).unwrap();
                 frontier.add(black_box(url), black_box(0)).unwrap();
             }
         });
@@ -16,7 +16,7 @@ fn frontier_benchmark(c: &mut Criterion) {
     c.bench_function("frontier_get_next_1000", |b| {
         let mut frontier = Frontier::new();
         for i in 0..1000 {
-            let url = Url::parse(&format!("https://example.com/page{}", i)).unwrap();
+            let url = Url::parse(&format!("https://example.com/page{i}")).unwrap();
             frontier.add(url, i % 10).unwrap();
         }
 

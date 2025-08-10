@@ -34,7 +34,7 @@ impl Extractor {
 
         for pattern in &self.patterns {
             let regex = Regex::new(&pattern.regex)
-                .map_err(|e| Error::Parse(format!("Invalid regex: {}", e)))?;
+                .map_err(|e| Error::Parse(format!("Invalid regex: {e}")))?;
 
             for captures in regex.captures_iter(text) {
                 let mut extracted = HashMap::new();

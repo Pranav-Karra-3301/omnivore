@@ -6,20 +6,15 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use url::Url;
 
+type DomainRateLimiter = RateLimiter<
+    governor::state::direct::NotKeyed,
+    governor::state::InMemoryState,
+    governor::clock::DefaultClock,
+>;
+
 pub struct PolitenessEngine {
     config: PolitenessConfig,
-    domain_limiters: Arc<
-        DashMap<
-            String,
-            Arc<
-                RateLimiter<
-                    governor::state::direct::NotKeyed,
-                    governor::state::InMemoryState,
-                    governor::clock::DefaultClock,
-                >,
-            >,
-        >,
-    >,
+    domain_limiters: Arc<DashMap<String, Arc<DomainRateLimiter>>>,
     last_access: Arc<DashMap<String, Instant>>,
 }
 

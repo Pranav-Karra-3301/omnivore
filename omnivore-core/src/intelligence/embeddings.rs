@@ -13,8 +13,8 @@ impl EmbeddingGenerator {
         let hash = self.simple_hash(text);
         let mut embedding = vec![0.0f32; self.dimension];
 
-        for i in 0..self.dimension {
-            embedding[i] = ((hash + i as u64) % 1000) as f32 / 1000.0;
+        for (i, value) in embedding.iter_mut().enumerate().take(self.dimension) {
+            *value = ((hash + i as u64) % 1000) as f32 / 1000.0;
         }
 
         Ok(embedding)

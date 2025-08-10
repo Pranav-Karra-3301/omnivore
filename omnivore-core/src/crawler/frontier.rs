@@ -9,6 +9,12 @@ pub struct Frontier {
     seen: HashSet<String>,
 }
 
+impl Default for Frontier {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Frontier {
     pub fn new() -> Self {
         Self {

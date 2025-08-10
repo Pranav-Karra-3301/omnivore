@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
-use tracing_subscriber;
 
 #[derive(Default)]
 struct Query;
@@ -42,7 +41,7 @@ async fn main() -> Result<()> {
         .with_env_filter("info,tower_http=debug")
         .init();
 
-    let schema = Schema::build(Query::default(), EmptyMutation, EmptySubscription).finish();
+    let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
 
     let state = AppState {
         crawler_stats: Arc::new(RwLock::new(None)),

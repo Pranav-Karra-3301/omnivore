@@ -53,8 +53,7 @@ impl Schema {
         for required_field in &self.required {
             if !obj.contains_key(required_field) {
                 return Err(Error::Parse(format!(
-                    "Required field '{}' is missing",
-                    required_field
+                    "Required field '{required_field}' is missing"
                 )));
             }
         }
@@ -78,6 +77,7 @@ impl Schema {
         Ok(())
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn validate_type(&self, field_type: &FieldType, value: &Value) -> Result<()> {
         match (field_type, value) {
             (FieldType::String, Value::String(_)) => Ok(()),
@@ -98,8 +98,7 @@ impl Schema {
                 Ok(())
             }
             _ => Err(Error::Parse(format!(
-                "Type mismatch: expected {:?}, got {:?}",
-                field_type, value
+                "Type mismatch: expected {field_type:?}, got {value:?}"
             ))),
         }
     }
@@ -131,11 +130,10 @@ impl Schema {
             Validator::Pattern { regex } => {
                 if let Value::String(s) = value {
                     let re = regex::Regex::new(regex)
-                        .map_err(|e| Error::Parse(format!("Invalid regex: {}", e)))?;
+                        .map_err(|e| Error::Parse(format!("Invalid regex: {e}")))?;
                     if !re.is_match(s) {
                         return Err(Error::Parse(format!(
-                            "String '{}' does not match pattern '{}'",
-                            s, regex
+                            "String '{s}' does not match pattern '{regex}'"
                         )));
                     }
                 }
@@ -145,8 +143,7 @@ impl Schema {
                     if let Some(num) = n.as_f64() {
                         if num < *min {
                             return Err(Error::Parse(format!(
-                                "Number {} is less than minimum {}",
-                                num, min
+                                "Number {num} is less than minimum {min}"
                             )));
                         }
                     }
@@ -157,8 +154,7 @@ impl Schema {
                     if let Some(num) = n.as_f64() {
                         if num > *max {
                             return Err(Error::Parse(format!(
-                                "Number {} exceeds maximum {}",
-                                num, max
+                                "Number {num} exceeds maximum {max}"
                             )));
                         }
                     }
@@ -167,8 +163,7 @@ impl Schema {
             Validator::Enum { values } => {
                 if !values.contains(value) {
                     return Err(Error::Parse(format!(
-                        "Value {:?} is not in allowed values {:?}",
-                        value, values
+                        "Value {value:?} is not in allowed values {values:?}"
                     )));
                 }
             }

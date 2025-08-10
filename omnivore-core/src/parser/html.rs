@@ -15,7 +15,7 @@ impl HtmlParser {
 
     pub fn select(&self, selector: &str) -> Result<Vec<String>> {
         let selector = Selector::parse(selector)
-            .map_err(|e| Error::Parse(format!("Invalid selector: {:?}", e)))?;
+            .map_err(|e| Error::Parse(format!("Invalid selector: {e:?}")))?;
 
         Ok(self
             .document
@@ -26,7 +26,7 @@ impl HtmlParser {
 
     pub fn select_attr(&self, selector: &str, attribute: &str) -> Result<Vec<String>> {
         let selector = Selector::parse(selector)
-            .map_err(|e| Error::Parse(format!("Invalid selector: {:?}", e)))?;
+            .map_err(|e| Error::Parse(format!("Invalid selector: {e:?}")))?;
 
         Ok(self
             .document

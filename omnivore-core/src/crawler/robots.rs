@@ -84,6 +84,6 @@ impl RobotsChecker {
     }
 
     pub fn get_crawl_delay(&self, domain: &str) -> Option<Duration> {
-        self.cache.get(domain).and_then(|_cached| None)
+        self.cache.get(domain).and(None)
     }
 }

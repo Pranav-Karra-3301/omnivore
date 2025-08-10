@@ -4,7 +4,6 @@ use colored::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use omnivore_core::{crawler::Crawler, CrawlConfig, PolitenessConfig};
 use std::path::PathBuf;
-use tokio;
 use url::Url;
 
 #[derive(Parser)]

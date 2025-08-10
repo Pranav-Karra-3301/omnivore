@@ -2,6 +2,12 @@ use crate::Result;
 
 pub struct GraphDatabase;
 
+impl Default for GraphDatabase {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GraphDatabase {
     pub fn new() -> Self {
         Self

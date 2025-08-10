@@ -13,7 +13,7 @@ impl KvStore {
         opts.create_if_missing(true);
 
         let db = DB::open(&opts, path)
-            .map_err(|e| Error::Storage(format!("Failed to open database: {}", e)))?;
+            .map_err(|e| Error::Storage(format!("Failed to open database: {e}")))?;
 
         Ok(Self { db })
     }
@@ -26,7 +26,7 @@ impl KvStore {
         let serialized = serde_json::to_vec(value)?;
         self.db
             .put(key, serialized)
-            .map_err(|e| Error::Storage(format!("Failed to put value: {}", e)))
+            .map_err(|e| Error::Storage(format!("Failed to put value: {e}")))
     }
 
     pub fn get<K, V>(&self, key: K) -> Result<Option<V>>
@@ -40,7 +40,7 @@ impl KvStore {
                 Ok(Some(value))
             }
             Ok(None) => Ok(None),
-            Err(e) => Err(Error::Storage(format!("Failed to get value: {}", e))),
+            Err(e) => Err(Error::Storage(format!("Failed to get value: {e}"))),
         }
     }
 
@@ -50,6 +50,6 @@ impl KvStore {
     {
         self.db
             .delete(key)
-            .map_err(|e| Error::Storage(format!("Failed to delete value: {}", e)))
+            .map_err(|e| Error::Storage(format!("Failed to delete value: {e}")))
     }
 }

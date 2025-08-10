@@ -27,6 +27,12 @@ pub struct KnowledgeGraph {
     node_index: HashMap<String, NodeIndex>,
 }
 
+impl Default for KnowledgeGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KnowledgeGraph {
     pub fn new() -> Self {
         Self {

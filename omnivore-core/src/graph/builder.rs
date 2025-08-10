@@ -6,6 +6,12 @@ pub struct GraphBuilder {
     graph: KnowledgeGraph,
 }
 
+impl Default for GraphBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GraphBuilder {
     pub fn new() -> Self {
         Self {

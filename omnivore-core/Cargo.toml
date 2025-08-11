@@ -1,80 +1,82 @@
 [package]
 name = "omnivore-core"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-homepage.workspace = true
+version = "0.1.1"
+edition = "2021"
+authors = ["Pranav Karra <pranav.karra@example.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Pranav-Karra-3301/omnivore"
+homepage = "https://ov.pranavkarra.me"
 documentation = "https://docs.rs/omnivore-core"
-description = "Core crawler and knowledge graph engine for Omnivore"
+description = "Core crawler and knowledge graph engine for Omnivore - web scraping, AI extraction, browser automation"
+keywords = ["crawler", "web-scraping", "knowledge-graph", "async", "browser"]
+categories = ["web-programming", "network-programming", "data-structures"]
 readme = "README.md"
 
 [dependencies]
 # Async runtime
-tokio = { workspace = true }
-async-trait = { workspace = true }
-futures = { workspace = true }
+tokio = { version = "1.43", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
 
 # HTTP and networking
-reqwest = { workspace = true }
-hyper = { workspace = true }
-url = { workspace = true }
+reqwest = { version = "0.12", features = ["json", "cookies", "gzip", "brotli", "rustls-tls"] }
+hyper = "1.6"
+url = "2.5"
 
 # Browser automation
-thirtyfour = { workspace = true }
+thirtyfour = "0.36"
 
 # HTML parsing
-scraper = { workspace = true }
-html5ever = { workspace = true }
-select = { workspace = true }
-regex = { workspace = true }
+scraper = "0.22"
+html5ever = "0.29"
+select = "0.6"
+regex = "1.11"
 
 # Serialization
-serde = { workspace = true }
-serde_json = { workspace = true }
-serde_yaml = { workspace = true }
-toml = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+toml = "0.8"
 
 # Error handling
-anyhow = { workspace = true }
-thiserror = { workspace = true }
+anyhow = "1.0"
+thiserror = "2.0"
 
 # Logging
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "time", "fmt", "ansi"] }
 
 # Database and storage
-rocksdb = { workspace = true }
-redis = { workspace = true }
-sqlx = { workspace = true, optional = true }
+rocksdb = "0.22"
+redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "sqlite", "chrono", "uuid"], optional = true }
 
 # Graph processing
-petgraph = { workspace = true }
+petgraph = "0.6"
 
 # Data structures
-dashmap = { workspace = true }
-indexmap = { workspace = true }
-priority-queue = { workspace = true }
+dashmap = "6.1"
+indexmap = "2.7"
+priority-queue = "2.1"
 
 # Utilities
-once_cell = { workspace = true }
-parking_lot = { workspace = true }
-arc-swap = { workspace = true }
-bytes = { workspace = true }
-chrono = { workspace = true }
-uuid = { workspace = true }
-rand = { workspace = true }
-base64 = { workspace = true }
-sha2 = { workspace = true }
+once_cell = "1.20"
+parking_lot = "0.12"
+arc-swap = "1.7"
+bytes = "1.9"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.11", features = ["v4", "serde"] }
+rand = "0.8"
+base64 = "0.22"
+sha2 = "0.10"
 dirs = "5.0"
 
 # Compression
-flate2 = { workspace = true }
-zstd = { workspace = true }
+flate2 = "1.0"
+zstd = "0.13"
 
 # Rate limiting
-governor = { workspace = true }
+governor = "0.7"
 
 # Additional crawler-specific deps
 robotstxt = "0.3"
@@ -82,10 +84,10 @@ mime = "0.3"
 encoding_rs = "0.8"
 
 [dev-dependencies]
-mockito = { workspace = true }
-proptest = { workspace = true }
-criterion = { workspace = true }
-tempfile = { workspace = true }
+mockito = "1.6"
+proptest = "1.5"
+criterion = "0.5"
+tempfile = "3.14"
 
 [features]
 default = ["full"]

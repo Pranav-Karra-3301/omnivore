@@ -573,7 +573,6 @@ dependencies = [
  "anstyle",
  "clap_lex",
  "strsim",
- "terminal_size",
 ]
 
 [[package]]
@@ -2617,7 +2616,7 @@ dependencies = [
 
 [[package]]
 name = "omnivore-cli"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -2635,7 +2634,7 @@ dependencies = [
  "globset",
  "ignore",
  "indicatif",
- "omnivore-core",
+ "omnivore-core 0.1.0",
  "predicates",
  "ratatui",
  "reqwest",
@@ -2652,6 +2651,55 @@ dependencies = [
  "walkdir",
  "which",
  "zip",
+]
+
+[[package]]
+name = "omnivore-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe08dca46675af3a99cff60cb2f897f86691f17439703f0143a9ba17206b26b3"
+dependencies = [
+ "anyhow",
+ "arc-swap",
+ "async-trait",
+ "base64 0.22.1",
+ "bytes",
+ "chrono",
+ "dashmap",
+ "encoding_rs",
+ "flate2",
+ "futures",
+ "governor",
+ "html5ever 0.29.1",
+ "hyper",
+ "indexmap",
+ "mime",
+ "once_cell",
+ "parking_lot",
+ "petgraph",
+ "priority-queue",
+ "rand 0.8.5",
+ "redis",
+ "regex",
+ "reqwest",
+ "robotstxt",
+ "rocksdb",
+ "scraper",
+ "select",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "sqlx",
+ "thirtyfour 0.34.0",
+ "thiserror 2.0.12",
+ "tokio",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+ "zstd",
 ]
 
 [[package]]
@@ -2695,7 +2743,7 @@ dependencies = [
  "sha2",
  "sqlx",
  "tempfile",
- "thirtyfour",
+ "thirtyfour 0.36.1",
  "thiserror 2.0.12",
  "tokio",
  "toml",
@@ -4444,20 +4492,39 @@ dependencies = [
 ]
 
 [[package]]
-name = "terminal_size"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45c6481c4829e4cc63825e62c49186a34538b7b2750b73b266581ffb612fb5ed"
-dependencies = [
- "rustix 1.0.8",
- "windows-sys 0.59.0",
-]
-
-[[package]]
 name = "termtree"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
+
+[[package]]
+name = "thirtyfour"
+version = "0.34.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "940c3778665cf311d848d8fa4207377c2ee8e5ddbb8c6fb4cff3f33072b2eb26"
+dependencies = [
+ "arc-swap",
+ "async-trait",
+ "base64 0.22.1",
+ "bytes",
+ "cfg-if",
+ "futures",
+ "http",
+ "indexmap",
+ "parking_lot",
+ "paste",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "stringmatch",
+ "strum",
+ "thirtyfour-macros 0.1.3",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+ "url",
+]
 
 [[package]]
 name = "thirtyfour"
@@ -4480,11 +4547,22 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "stringmatch",
- "thirtyfour-macros",
+ "thirtyfour-macros 0.2.0",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "thirtyfour-macros"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b72d056365e368fc57a56d0cec9e41b02fb4a3474a61c8735262b1cfebe67425"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
 ]
 
 [[package]]
@@ -4852,6 +4930,7 @@ dependencies = [
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "time",
  "tracing",
  "tracing-core",
  "tracing-log",

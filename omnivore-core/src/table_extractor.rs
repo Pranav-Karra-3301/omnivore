@@ -1,6 +1,5 @@
 use scraper::{Html, Selector, ElementRef};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TableData {
@@ -97,7 +96,7 @@ impl TableExtractor {
         }
         
         // Look for title in previous sibling or parent
-        title = self.find_table_title(table).or(caption.clone());
+        let _ = self.find_table_title(table).or(caption.clone());
         
         // Extract headers from thead or first row with th elements
         if let Ok(thead_selector) = Selector::parse("thead") {

@@ -38,6 +38,7 @@ impl Default for BrowserConfig {
 
 pub struct BrowserEngine {
     driver: WebDriver,
+    #[allow(dead_code)]
     config: BrowserConfig,
 }
 
@@ -266,7 +267,7 @@ impl BrowserEngine {
             // Get current scroll height
             let script = "return document.body.scrollHeight;";
             let height_result = self.driver.execute(script, vec![]).await?;
-            let current_height = height_result.value().as_i64().unwrap_or(0);
+            let current_height = height_result.json().as_i64().unwrap_or(0);
             
             if current_height == last_height {
                 // No more content to load
@@ -294,7 +295,7 @@ impl BrowserEngine {
         let initial_height = self.driver
             .execute("return document.body.scrollHeight;", vec![])
             .await?
-            .value()
+            .json()
             .as_i64()
             .unwrap_or(0);
         
@@ -304,7 +305,7 @@ impl BrowserEngine {
         let new_height = self.driver
             .execute("return document.body.scrollHeight;", vec![])
             .await?
-            .value()
+            .json()
             .as_i64()
             .unwrap_or(0);
         

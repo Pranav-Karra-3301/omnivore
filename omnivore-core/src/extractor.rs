@@ -6,6 +6,7 @@ use crate::table_extractor::{TableExtractor, TableData};
 #[derive(Debug, Clone)]
 pub struct ContentExtractor {
     min_text_length: usize,
+    #[allow(dead_code)]
     skip_boilerplate: bool,
 }
 
@@ -246,6 +247,7 @@ impl ContentExtractor {
         }
     }
     
+    #[allow(dead_code)]
     fn parse_course_element(&self, element: scraper::ElementRef) -> Option<CourseInfo> {
         let text = element.text().collect::<String>();
         let code_pattern = regex::Regex::new(r"([A-Z]+\s*\d{3}[A-Z]?)").ok()?;
@@ -328,6 +330,7 @@ impl ContentExtractor {
         courses
     }
     
+    #[allow(dead_code)]
     fn parse_course_dl(&self, _dl: scraper::ElementRef) -> Vec<CourseInfo> {
         let courses = Vec::new();
         // TODO: Implementation for definition list parsing
@@ -449,7 +452,7 @@ impl ContentExtractor {
         ];
         
         // Walk up the DOM tree to check for content containers
-        let mut current = element;
+        let current = element;
         for _ in 0..10 {  // Check up to 10 levels
             for selector_str in &content_selectors {
                 if let Ok(selector) = Selector::parse(selector_str) {

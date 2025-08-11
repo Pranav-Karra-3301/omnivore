@@ -1,7 +1,6 @@
 use scraper::{Html, Selector, ElementRef};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

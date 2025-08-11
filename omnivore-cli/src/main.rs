@@ -73,6 +73,10 @@ enum Commands {
         #[arg(help = "Interactive setup wizard for Omnivore configuration")]
         _placeholder: Option<String>,
     },
+    Config {
+        #[arg(help = "Show current configuration")]
+        _placeholder: Option<String>,
+    },
     Crawl {
         #[arg(help = "URL to start crawling from")]
         url: String,
@@ -179,6 +183,9 @@ async fn main() -> Result<()> {
         Commands::Setup { .. } => {
             setup::run_setup().await?;
         }
+        Commands::Config { .. } => {
+            setup::show_config().await?;
+        }
         Commands::Crawl {
             url,
             workers,
@@ -234,7 +241,7 @@ fn print_banner() {
     println!("{}", "The Universal Web Scraper & Code Extractor".bright_white());
     
     // Show API key status
-    let (configured, status) = setup::check_api_key_status();
+    let (_configured, status) = setup::check_api_key_status();
     println!("{}", status);
     
     println!();
@@ -385,7 +392,7 @@ async fn crawl_command(
     }
     
     // Auto mode overrides individual settings
-    let (auto_tables, auto_interact, auto_browser) = if auto {
+    let (_auto_tables, _auto_interact, _auto_browser) = if auto {
         println!("  Auto mode: {}", "enabled (automatic detection and extraction)".green());
         (true, true, true)
     } else {
@@ -418,7 +425,7 @@ async fn crawl_command(
 
     // Handle browser mode separately
     if browser {
-        #[cfg(feature = "browser")]
+        #[cfg(all())]
         {
             use omnivore_core::crawler::browser::{BrowserEngine, DynamicContent};
             
@@ -448,7 +455,7 @@ async fn crawl_command(
             return Ok(());
         }
         
-        #[cfg(not(feature = "browser"))]
+        #[cfg(not(all()))]
         {
             println!("{}", "⚠️  Browser mode requires the 'browser' feature to be enabled".yellow());
             println!("Rebuild with: cargo build --features browser");
@@ -491,7 +498,99 @@ async fn crawl_command(
     progress.finish_with_message("Crawl completed!");
 
     let final_stats = crawler.get_stats().await;
-    let crawl_results = crawler.get_results().await;
+    let mut crawl_results = crawler.get_results().await;
+    
+    // If auto mode is enabled, perform automatic extraction
+    if auto {
+        println!();
+        println!("{}", "🤖 Auto Mode: Performing intelligent extraction...".bold().cyan());
+        
+        // Load config for extraction settings
+        let omnivore_config = omnivore_core::config::OmnivoreConfig::load().unwrap_or_default();
+        
+        for result in &mut crawl_results {
+            // Use detector to find all elements
+            let detector = omnivore_core::detector::UniversalDetector::new(&result.content, Some(&result.url));
+            let detected = detector.detect_all();
+            
+            // Add detection report to extracted_data
+            let mut extracted = serde_json::Map::new();
+            
+            if omnivore_config.extraction.auto_detect_tables && !detected.tables.is_empty() {
+                extracted.insert("tables".to_string(), serde_json::to_value(&detected.tables)?);
+                println!("  Found {} tables in {}", detected.tables.len().to_string().green(), result.url);
+            }
+            
+            if omnivore_config.extraction.auto_detect_forms && !detected.forms.is_empty() {
+                extracted.insert("forms".to_string(), serde_json::to_value(&detected.forms)?);
+                println!("  Found {} forms in {}", detected.forms.len().to_string().green(), result.url);
+            }
+            
+            if omnivore_config.extraction.auto_detect_dropdowns && !detected.dropdowns.is_empty() {
+                extracted.insert("dropdowns".to_string(), serde_json::to_value(&detected.dropdowns)?);
+                println!("  Found {} dropdowns in {}", detected.dropdowns.len().to_string().green(), result.url);
+            }
+            
+            if omnivore_config.extraction.auto_detect_pagination && detected.pagination.is_some() {
+                extracted.insert("pagination".to_string(), serde_json::to_value(&detected.pagination)?);
+                println!("  Found pagination in {}", result.url);
+            }
+            
+            if omnivore_config.extraction.auto_detect_downloads && !detected.downloads.is_empty() {
+                extracted.insert("downloads".to_string(), serde_json::to_value(&detected.downloads)?);
+                println!("  Found {} downloadable files in {}", detected.downloads.len().to_string().green(), result.url);
+            }
+            
+            let contact_count = detected.contacts.emails.len() + detected.contacts.phones.len();
+            if contact_count > 0 {
+                extracted.insert("contacts".to_string(), serde_json::to_value(&detected.contacts)?);
+                println!("  Found {} contact details in {}", contact_count.to_string().green(), result.url);
+            }
+            
+            if !detected.interactive.is_empty() {
+                extracted.insert("interactive".to_string(), serde_json::to_value(&detected.interactive)?);
+            }
+            
+            if !detected.media.images.is_empty() || !detected.media.videos.is_empty() {
+                extracted.insert("media".to_string(), serde_json::to_value(&detected.media)?);
+            }
+            
+            if !detected.structured_data.is_empty() {
+                extracted.insert("structured_data".to_string(), serde_json::to_value(&detected.structured_data)?);
+            }
+            
+            // Update result with extracted data
+            result.extracted_data = serde_json::Value::Object(extracted);
+        }
+        
+        println!("{}", "✓ Automatic extraction complete!".green());
+    }
+    
+    // Handle AI extraction if specified
+    if let Some(ref ai_query) = ai {
+        println!();
+        println!("{}", format!("🤖 AI Mode: Processing query \"{}\"...", ai_query).bold().cyan());
+        
+        let omnivore_config = omnivore_core::config::OmnivoreConfig::load().unwrap_or_default();
+        
+        if omnivore_config.ai.openai_api_key.is_some() {
+            let smart_extractor = omnivore_core::ai::SmartExtractor::new(&omnivore_config);
+            
+            for result in &mut crawl_results {
+                match smart_extractor.process_natural_language(ai_query, &result.url, &result.content).await {
+                    Ok(extracted) => {
+                        result.extracted_data = extracted;
+                        println!("  ✓ Extracted data from {}", result.url.green());
+                    }
+                    Err(e) => {
+                        println!("  ✗ Failed to extract from {}: {}", result.url.red(), e);
+                    }
+                }
+            }
+        } else {
+            println!("{}", "⚠️  OpenAI API key not configured. Run 'omnivore setup' to configure.".yellow());
+        }
+    }
     
     println!();
     println!("{}", "📊 Final Statistics:".bold().green());
@@ -901,7 +1000,7 @@ async fn docs_command() -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "browser")]
+#[cfg(all())]
 fn convert_dynamic_to_crawl_result(dynamic: omnivore_core::crawler::browser::DynamicContent) -> Result<CrawlResult> {
     use omnivore_core::extractor::ContentExtractor;
     
@@ -937,17 +1036,18 @@ fn convert_dynamic_to_crawl_result(dynamic: omnivore_core::crawler::browser::Dyn
     })
 }
 
+#[allow(dead_code)]
 async fn handle_crawl_results(
     crawl_results: Vec<CrawlResult>,
     start_url: &Url,
     output: Option<PathBuf>,
     organize: bool,
     format: OutputFormat,
-    zip: bool,
-    extract_tables: bool,
-    exclude_urls: bool,
+    _zip: bool,
+    _extract_tables: bool,
+    _exclude_urls: bool,
 ) -> Result<()> {
-    let final_stats = CrawlStats {
+    let _final_stats = CrawlStats {
         total_urls: crawl_results.len(),
         successful: crawl_results.len(),
         failed: 0,

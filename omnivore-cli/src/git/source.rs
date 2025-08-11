@@ -145,10 +145,12 @@ impl SourceAcquisition {
     }
 }
 
+#[allow(dead_code)]
 pub fn is_git_repository(path: &Path) -> bool {
     path.join(".git").exists()
 }
 
+#[allow(dead_code)]
 pub fn validate_url(url_str: &str) -> Result<Url> {
     if url_str.starts_with("git@") {
         let ssh_url = url_str.replace(':', "/").replace("git@", "ssh://git@");

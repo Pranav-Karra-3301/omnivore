@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use colored::*;
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use omnivore_core::config::{OmnivoreConfig, ExtractionTemplate, PatternRule};
@@ -477,5 +477,104 @@ pub fn check_api_key_status() -> (bool, String) {
         Err(_) => {
             (false, format!("{} Configuration not found (run 'omnivore setup')", "✗".yellow()))
         }
+    }
+}
+
+pub async fn show_config() -> Result<()> {
+    println!("{}", "📋 Omnivore Configuration".bold().cyan());
+    println!();
+    
+    match OmnivoreConfig::load() {
+        Ok(config) => {
+            // AI Configuration
+            println!("{}", "🤖 AI Settings:".bold());
+            println!("  API Key: {}", if config.ai.openai_api_key.is_some() {
+                "✓ Configured".green().to_string()
+            } else {
+                "✗ Not configured".red().to_string()
+            });
+            println!("  Model: {}", config.ai.model.yellow());
+            println!("  Natural Language: {}", if config.ai.enable_natural_language {
+                "✓ Enabled".green().to_string()
+            } else {
+                "✗ Disabled".dimmed().to_string()
+            });
+            println!();
+            
+            // Extraction Settings
+            println!("{}", "📊 Extraction Settings:".bold());
+            println!("  Auto-detect tables: {}", bool_status(config.extraction.auto_detect_tables));
+            println!("  Auto-detect forms: {}", bool_status(config.extraction.auto_detect_forms));
+            println!("  Auto-detect dropdowns: {}", bool_status(config.extraction.auto_detect_dropdowns));
+            println!("  Auto-detect pagination: {}", bool_status(config.extraction.auto_detect_pagination));
+            println!("  Auto-follow pagination: {}", bool_status(config.extraction.auto_follow_pagination));
+            if config.extraction.auto_follow_pagination {
+                println!("    Max pages: {}", config.extraction.max_pagination_pages.to_string().yellow());
+            }
+            println!("  Auto-detect downloads: {}", bool_status(config.extraction.auto_detect_downloads));
+            println!("  Auto-extract emails: {}", bool_status(config.extraction.auto_extract_emails));
+            println!("  Auto-extract phones: {}", bool_status(config.extraction.auto_extract_phones));
+            println!();
+            
+            // Browser Settings
+            println!("{}", "🌐 Browser Settings:".bold());
+            if let Some(ref driver_path) = config.browser.driver_path {
+                println!("  ChromeDriver: {}", driver_path.green());
+            } else {
+                println!("  ChromeDriver: {}", "Not configured".yellow());
+            }
+            println!("  Headless mode: {}", bool_status(config.browser.headless));
+            println!("  Page timeout: {}s", config.browser.timeout.to_string().yellow());
+            println!();
+            
+            // Output Settings
+            println!("{}", "💾 Output Settings:".bold());
+            println!("  Default format: {}", config.output.default_format.yellow());
+            println!("  Organize output: {}", bool_status(config.output.organize_output));
+            println!("  Compress output: {}", bool_status(config.output.compress_output));
+            if let Some(ref webhook) = config.output.webhook_url {
+                println!("  Webhook: {}", webhook.cyan());
+            }
+            println!();
+            
+            // Advanced Settings
+            println!("{}", "⚙️  Advanced Settings:".bold());
+            println!("  Max workers: {}", config.advanced.max_workers.to_string().yellow());
+            println!("  Max depth: {}", config.advanced.max_depth.to_string().yellow());
+            println!("  Respect robots.txt: {}", bool_status(config.advanced.respect_robots));
+            println!("  Rate limit: {}ms", config.advanced.rate_limit_ms.to_string().yellow());
+            println!();
+            
+            // Templates
+            println!("{}", "📝 Templates:".bold());
+            match ExtractionTemplate::list_templates() {
+                Ok(templates) if !templates.is_empty() => {
+                    for template in templates {
+                        println!("  - {}", template.green());
+                    }
+                }
+                _ => {
+                    println!("  No templates found");
+                }
+            }
+            println!();
+            
+            println!("{}", "💡 Tip: Run 'omnivore setup' to modify configuration".dimmed());
+        }
+        Err(_) => {
+            println!("{}", "⚠️  No configuration found!".yellow());
+            println!();
+            println!("Run {} to create your configuration", "'omnivore setup'".bold());
+        }
+    }
+    
+    Ok(())
+}
+
+fn bool_status(value: bool) -> String {
+    if value {
+        "✓".green().to_string()
+    } else {
+        "✗".dimmed().to_string()
     }
 }

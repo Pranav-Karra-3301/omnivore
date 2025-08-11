@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::path::Path;
 
+#[allow(dead_code)]
 pub fn is_text_file(path: &Path) -> bool {
     if let Some(extension) = path.extension() {
         if let Some(ext_str) = extension.to_str() {
@@ -17,6 +18,7 @@ pub fn is_text_file(path: &Path) -> bool {
     false
 }
 
+#[allow(dead_code)]
 fn is_text_extension(ext: &str) -> bool {
     matches!(
         ext.to_lowercase().as_str(),
@@ -43,6 +45,7 @@ fn is_text_extension(ext: &str) -> bool {
     )
 }
 
+#[allow(dead_code)]
 fn is_text_filename(name: &str) -> bool {
     matches!(
         name.to_lowercase().as_str(),
@@ -57,6 +60,7 @@ fn is_text_filename(name: &str) -> bool {
     ) || name.starts_with('.') && !name.contains('.')
 }
 
+#[allow(dead_code)]
 pub fn parse_size_string(size_str: &str) -> Result<u64> {
     let size_str = size_str.trim().to_uppercase();
     
@@ -81,6 +85,7 @@ pub fn parse_size_string(size_str: &str) -> Result<u64> {
     Ok((number * multiplier as f64) as u64)
 }
 
+#[allow(dead_code)]
 fn split_size_string(s: &str) -> Result<(String, String)> {
     let mut number_part = String::new();
     let mut unit_part = String::new();

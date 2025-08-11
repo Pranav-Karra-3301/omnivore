@@ -22,6 +22,7 @@ pub struct FileContent {
 
 pub struct OutputWriter {
     format: OutputFormat,
+    #[allow(dead_code)]
     root_path: PathBuf,
     output_path: Option<PathBuf>,
     force_stdout: bool,
@@ -169,6 +170,7 @@ fn read_file_content(path: &Path) -> Result<String> {
     Ok(cow.into_owned())
 }
 
+#[allow(dead_code)]
 pub fn format_file_size(size: u64) -> String {
     const UNITS: &[&str] = &["B", "KB", "MB", "GB"];
     let mut size = size as f64;

@@ -10,6 +10,7 @@ use walkdir::{DirEntry, WalkDir};
 pub struct FilteredFile {
     pub path: PathBuf,
     pub relative_path: PathBuf,
+    #[allow(dead_code)]
     pub size: u64,
 }
 

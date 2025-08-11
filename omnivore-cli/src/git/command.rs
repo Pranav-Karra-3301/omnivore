@@ -78,12 +78,15 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     println!("{}", "🔍 Omnivore Code Analyzer".bold().cyan());
     println!();
 
-    let progress = create_progress_bar("Initializing...");
-
+    // Detect source type first, before creating progress bar
+    // This allows the confirmation prompt to display properly for non-git directories
     let source_type = SourceType::from_string(&args.source)?;
     if args.verbose {
         println!("Source type: {:?}", source_type);
     }
+
+    // Now create the progress bar after any user interaction
+    let progress = create_progress_bar("Initializing...");
 
     // Show appropriate message based on source type
     match &source_type {

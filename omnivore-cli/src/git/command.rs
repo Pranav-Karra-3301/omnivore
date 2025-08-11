@@ -75,7 +75,7 @@ pub struct GitArgs {
 }
 
 pub async fn execute_git_command(args: GitArgs) -> Result<()> {
-    println!("{}", "🔍 Omnivore Git Code Extractor".bold().cyan());
+    println!("{}", "🔍 Omnivore Code Analyzer".bold().cyan());
     println!();
 
     let progress = create_progress_bar("Initializing...");
@@ -85,12 +85,25 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
         println!("Source type: {:?}", source_type);
     }
 
+    // Show appropriate message based on source type
+    match &source_type {
+        SourceType::Remote(_) => {
+            println!("Analyzing remote Git repository...");
+        }
+        SourceType::Local(_) => {
+            println!("Analyzing local Git repository...");
+        }
+        SourceType::LocalNonGit(_) => {
+            println!("{}", "Analyzing local directory (non-Git)...".yellow());
+        }
+    }
+
     progress.set_message("Acquiring source...");
-    let mut acquisition = SourceAcquisition::new(source_type, args.depth, args.keep);
+    let mut acquisition = SourceAcquisition::new(source_type.clone(), args.depth, args.keep);
     let repo_path = acquisition
         .acquire()
         .await
-        .context("Failed to acquire repository source")?;
+        .context("Failed to acquire source")?;
 
     progress.set_message("Detecting codebase type...");
     let detector = CodebaseDetector::new(repo_path.clone());

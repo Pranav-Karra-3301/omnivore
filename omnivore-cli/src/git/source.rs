@@ -3,11 +3,14 @@ use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks};
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 use url::Url;
+use colored::*;
+use std::io::{self, Write};
 
 #[derive(Debug, Clone)]
 pub enum SourceType {
     Remote(String),
     Local(PathBuf),
+    LocalNonGit(PathBuf),  // New variant for non-git directories
 }
 
 impl SourceType {
@@ -20,19 +23,54 @@ impl SourceType {
             Ok(SourceType::Remote(source.to_string()))
         } else {
             let path = PathBuf::from(source);
-            if path.is_dir() {
-                let git_dir = path.join(".git");
+            // Try to resolve the path - could be relative or absolute
+            let resolved_path = if path.is_absolute() {
+                path
+            } else {
+                std::env::current_dir()?.join(path)
+            };
+            
+            if resolved_path.is_dir() {
+                let git_dir = resolved_path.join(".git");
                 if !git_dir.exists() {
-                    return Err(anyhow!(
-                        "'{}' is not a Git repository (no .git directory found)",
-                        source
-                    ));
+                    // Ask for confirmation to proceed with non-git directory
+                    if Self::confirm_non_git_directory(&resolved_path)? {
+                        Ok(SourceType::LocalNonGit(resolved_path.canonicalize()?))
+                    } else {
+                        Err(anyhow!("Operation cancelled by user"))
+                    }
+                } else {
+                    Ok(SourceType::Local(resolved_path.canonicalize()?))
                 }
-                Ok(SourceType::Local(path.canonicalize()?))
             } else {
                 Err(anyhow!("'{}' is not a valid directory", source))
             }
         }
+    }
+
+    fn confirm_non_git_directory(path: &Path) -> Result<bool> {
+        println!();
+        println!(
+            "{}",
+            format!(
+                "⚠️  '{}' is not a Git repository (no .git directory found)",
+                path.display()
+            )
+            .yellow()
+            .bold()
+        );
+        print!(
+            "{}",
+            "Do you want to continue and analyze this directory anyway? [y/N]: "
+                .bright_white()
+        );
+        io::stdout().flush()?;
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let input = input.trim().to_lowercase();
+
+        Ok(input == "y" || input == "yes")
     }
 }
 
@@ -57,6 +95,7 @@ impl SourceAcquisition {
         match self.source_type.clone() {
             SourceType::Remote(url) => self.clone_remote(&url).await,
             SourceType::Local(path) => Ok(path),
+            SourceType::LocalNonGit(path) => Ok(path),
         }
     }
 

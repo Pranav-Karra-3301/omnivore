@@ -427,7 +427,7 @@ async fn crawl_command(
     if browser {
         #[cfg(all())]
         {
-            use omnivore_core::crawler::browser::{BrowserEngine, DynamicContent};
+            use omnivore_core::crawler::browser::BrowserEngine;
             
             println!("{}", "🌐 Starting browser engine...".bold().yellow());
             println!("Note: Ensure ChromeDriver is running at localhost:9515");

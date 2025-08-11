@@ -124,9 +124,9 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     }
     
     let include_patterns = if let Some(only_patterns) = &args.only {
-        only_patterns.clone()
+        only_patterns.iter().map(|p| normalize_pattern(p)).collect()
     } else if let Some(include_patterns) = &args.include {
-        include_patterns.clone()
+        include_patterns.iter().map(|p| normalize_pattern(p)).collect()
     } else if should_use_smart_defaults(&args) {
         get_default_include_patterns(&codebase_info)
     } else {
@@ -138,7 +138,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     }
     
     let exclude_patterns = if let Some(exclude) = &args.exclude {
-        exclude.clone()
+        exclude.iter().map(|p| normalize_pattern(p)).collect()
     } else if should_use_smart_defaults(&args) {
         get_smart_exclude_patterns(&codebase_info)
     } else {
@@ -264,6 +264,18 @@ fn should_use_organized_output(args: &GitArgs, output_path: &Option<PathBuf>) ->
         }
     }
     args.stdout || args.json
+}
+
+fn normalize_pattern(pattern: &str) -> String {
+    // If pattern looks like a file extension without wildcards, convert it to a glob pattern
+    if !pattern.contains('*') && !pattern.contains('/') && !pattern.contains('?') && !pattern.contains('[') {
+        // Handle patterns like "md", ".md", "rs", ".rs" etc.
+        let cleaned = pattern.trim_start_matches('.');
+        if !cleaned.is_empty() && cleaned.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
+            return format!("**/*.{}", cleaned);
+        }
+    }
+    pattern.to_string()
 }
 
 fn extract_repo_name(source: &str) -> String {

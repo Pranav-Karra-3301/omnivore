@@ -7,12 +7,14 @@ A high-performance web crawler and content extraction framework written in Rust.
 ### ✅ Implemented
 - **Parallel web crawling** with configurable concurrency
 - **HTML content extraction** using CSS selectors and rules
+- **Git repository analysis** with intelligent code extraction
 - **Metadata extraction** (OpenGraph, Twitter Cards, JSON-LD)
 - **Politeness controls** with rate limiting and delays
 - **RocksDB storage** for crawled content
 - **REST API** for programmatic access
 - **CLI interface** with progress tracking
 - **TOML configuration** for flexible setup
+- **Smart code filtering** for repository analysis
 
 ### 🚧 In Development
 - Knowledge graph construction
@@ -26,6 +28,7 @@ A high-performance web crawler and content extraction framework written in Rust.
 - [Installation](installation.md) - Get Omnivore running on your system
 - [Quickstart](quickstart.md) - Start crawling in 5 minutes
 - [CLI Reference](cli.md) - Command-line interface documentation
+- [Git Command](cli-git.md) - Extract and analyze code from repositories
 - [API Documentation](api/rest.md) - REST API endpoints
 - [Configuration](configuration.md) - Customize crawler behavior
 
@@ -33,10 +36,12 @@ A high-performance web crawler and content extraction framework written in Rust.
 
 Omnivore is ideal for:
 - **Web scraping** - Extract structured data from websites
+- **Code analysis** - Extract and analyze source code from Git repositories
 - **Content archival** - Save website content locally
 - **Data mining** - Collect data for analysis
 - **Site monitoring** - Track changes over time
 - **Research** - Gather information systematically
+- **Codebase documentation** - Generate reports of repository structure
 
 ## Architecture Overview
 

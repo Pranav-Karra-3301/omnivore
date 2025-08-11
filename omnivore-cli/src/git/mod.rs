@@ -1,5 +1,7 @@
 pub mod command;
+pub mod detector;
 pub mod filter;
+pub mod organizer;
 pub mod output;
 pub mod source;
 pub mod utils;

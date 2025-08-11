@@ -6,7 +6,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FilteredFile {
     pub path: PathBuf,
     pub relative_path: PathBuf,

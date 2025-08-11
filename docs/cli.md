@@ -85,6 +85,40 @@ With extraction rules:
 omnivore parse page.html --rules rules.json
 ```
 
+### `git` - Git Repository Analysis
+
+Extract and analyze code from Git repositories with intelligent filtering.
+
+```bash
+omnivore git <SOURCE> [OPTIONS]
+```
+
+#### Arguments
+- `<SOURCE>`: Repository URL or local path
+
+#### Options
+- `--output <PATH>`: Output file path (.txt or .json)
+- `--only <PATTERNS>`: Include only matching files (comma-separated)
+- `--include <PATTERNS>`: Include matching files
+- `--exclude <PATTERNS>`: Exclude matching files
+- `--keep`: Keep cloned repository after completion
+- `--json`: Output in JSON format
+- `--stdout`: Output to stdout
+
+#### Examples
+
+Analyze a GitHub repository:
+```bash
+omnivore git https://github.com/rust-lang/cargo --output cargo-analysis.txt
+```
+
+Extract specific file types:
+```bash
+omnivore git ./my-project --only "*.rs,*.toml"
+```
+
+See [Git Command Documentation](cli-git.md) for detailed usage.
+
 ### `graph` - Graph Operations (⚠️ Not Implemented)
 
 Build knowledge graphs from crawled data.

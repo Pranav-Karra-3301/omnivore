@@ -31,10 +31,13 @@ A high-performance, parallel web crawler and knowledge graph system built in Rus
 - **Organized Output**: Structured folder hierarchy with separate files per page
 - **ZIP Compression**: Compress crawl results for easy storage and sharing
 
-### Code Extraction
-- **Git Repository Analysis**: Extract and filter code from any Git repository
-- **Smart File Filtering**: Include/exclude patterns, binary detection, size limits
-- **Multiple Output Modes**: Save to file by default, or output to stdout
+### Code Extraction & Analysis
+- **Git Repository Analysis**: Extract and analyze code from any Git repository
+- **Intelligent Codebase Detection**: Automatically identifies project type, languages, frameworks, and build tools
+- **Smart File Filtering**: Automatically excludes dependencies, build artifacts, and non-code files
+- **Organized Output**: Code structured by category (Source, Tests, Configuration, Documentation)
+- **Multiple Output Formats**: Formatted text reports or JSON for programmatic processing
+- **Flexible Filtering**: Include/exclude patterns with glob support, binary detection, size limits
 
 ### Advanced Features
 - **Browser Mode**: Full JavaScript rendering with headless Chrome
@@ -135,8 +138,8 @@ omnivore crawl https://gradschool.psu.edu/program-metrics \
   --extract-tables \
   --format markdown
 
-# Extract code from a Git repository
-omnivore git https://github.com/rust-lang/rust-by-example
+# Extract and analyze code from Git repositories
+omnivore git https://github.com/rust-lang/rust-by-example --output analysis.txt
 
 # Crawl JavaScript-heavy site with browser
 omnivore crawl https://dynamic-site.com --browser
@@ -147,9 +150,9 @@ omnivore crawl https://academic-portal.edu --browser --interact --extract-tables
 # Open documentation
 omnivore docs
 
-# Extract code from Git repositories
-omnivore git https://github.com/user/repo.git --output ./extracted-code
-omnivore git . --json > codebase.json  # Extract from local repo
+# More git examples - intelligent code extraction
+omnivore git https://github.com/facebook/react --only "*.js,*.jsx"  # Extract only JS files
+omnivore git . --output codebase.txt  # Analyze current directory
 
 # Start API server
 cargo run --bin omnivore-api
@@ -191,40 +194,50 @@ omnivore/
 - Query engine with graph algorithms
 - Export to various graph formats
 
-### Git Code Extractor (v0.1.1)
-Intelligent extraction of meaningful code from Git repositories:
+### Git Code Analyzer (v0.1.1+)
+Intelligent code extraction and analysis from Git repositories:
 
 #### Features
-- **Smart Filtering**: Automatically excludes build artifacts, dependencies, and generated files
-- **Gitignore Respect**: Honors repository's `.gitignore` files by default
-- **Flexible Output**: JSON, plain text, or directory structure preservation
-- **Pattern Matching**: Include/exclude files with glob patterns
-- **Binary Detection**: Automatic detection and filtering of binary files
-- **Size Limits**: Configurable file size restrictions
+- **Automatic Codebase Detection**: Identifies project type, languages, frameworks, and build tools
+- **Smart Filtering**: Automatically excludes node_modules, vendor, build artifacts, and 100+ other unnecessary patterns
+- **Organized Reports**: Structures code by category (Source, Tests, Configuration, Documentation)
+- **Large File Handling**: Skips files over 10MB by default, including ML models (*.pt, *.pkl) and databases
+- **Multiple Output Formats**: Pretty-printed text reports or JSON for programmatic processing
+- **Flexible Control**: Override defaults with --only, --include, --exclude patterns
 
 #### Usage Examples
 ```bash
-# Extract from remote repository (saves to file by default)
-omnivore git https://github.com/user/repo
+# Analyze repository with automatic detection (most common use case)
+omnivore git https://github.com/facebook/react --output react-analysis.txt
 
-# Extract specific file types
-omnivore git . --include "src/**/*.rs,Cargo.toml" --json
+# Extract only specific file types
+omnivore git https://github.com/rust-lang/cargo --only "*.rs,*.toml"
 
-# Output to stdout instead of file
-omnivore git . --include "*.md" --stdout
+# Analyze local repository
+omnivore git . --output my-project.txt
 
-# Keep cloned repository after extraction
-omnivore git https://github.com/rust-lang/rust --keep
+# JSON output for programmatic processing
+omnivore git https://github.com/vercel/next.js --json --output nextjs.json
 
-# Clone with specific depth
-omnivore git https://github.com/user/repo.git --depth 10 --output ./shallow
+# Include normally excluded files (like tests or vendor)
+omnivore git ./my-project --include "**/tests/**,**/vendor/**"
 
-# Include binary files and ignore gitignore
-omnivore git . --allow-binary --no-gitignore --output ./full-extract
+# Stream to stdout for piping
+omnivore git https://github.com/user/repo --stdout | grep "function"
 
-# Set maximum file size (10MB)
-omnivore git . --max-file-size 10485760 --json
+# Keep cloned repository for inspection
+omnivore git https://github.com/torvalds/linux --depth 1 --keep
 ```
+
+The git command intelligently filters out:
+- Package managers (node_modules, vendor, site-packages)
+- Build outputs (dist, build, target, bin)
+- Large binaries and models (*.pt, *.pkl, *.weights)
+- Media files (images, videos, fonts)
+- Lock files and caches
+- IDE configurations
+
+See [Git Command Documentation](docs/cli-git.md) for detailed usage.
 
 ## CLI Reference
 

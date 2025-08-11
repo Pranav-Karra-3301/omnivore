@@ -84,26 +84,15 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - codehilite:
-      guess_lang: false
 
 plugins:
   - search:
       separator: '[\s\-\.]+'
-      lang:
-        - en
-  - minify:
-      minify_html: true
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Pranav-Karra-3301/omnivore
-  version:
-    provider: mike
-  analytics:
-    provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
 
 nav:
   - Home:
@@ -112,27 +101,28 @@ nav:
     - Installation: installation.md
     - Configuration: configuration.md
     
-  - User Guide:
-    - CLI Reference: cli.md
-    - Examples:
-      - Basic Crawl: examples/basic-crawl.md
-    - Guides:
-      - Writing Extractors: guides/extractors.md
-      - Politeness & robots.txt: guides/politeness.md
-    - Tutorials:
-      - Build a Graph from a Site: tutorials/graph-from-site.md
-      
+  - CLI Reference:
+    - Overview: cli.md
+    - Crawl Command: cli-crawl.md
+    - Git Command: cli-git.md
+    
   - API:
     - REST API: api/rest.md
     - GraphQL API: api/graphql.md
     
   - Architecture:
     - Overview: architecture/overview.md
-    - Components:
-      - Crawler: architecture/crawler.md
-      - Parser: architecture/parser.md
-      - Storage: architecture/storage.md
-      - Knowledge Graph: architecture/knowledge-graph.md
+    - Crawler: architecture/crawler.md
+    - Parser: architecture/parser.md
+    - Storage: architecture/storage.md
+    - Knowledge Graph: architecture/knowledge-graph.md
+      
+  - Guides:
+    - Writing Extractors: guides/extractors.md
+    - Politeness & robots.txt: guides/politeness.md
+    
+  - Tutorials:
+    - Build a Graph from a Site: tutorials/graph-from-site.md
       
   - Deployment:
     - Docker: deployment/docker.md
@@ -141,11 +131,3 @@ nav:
   - Development:
     - Build & Test: development/build.md
     - Contributing: development/contributing.md
-
-extra_css:
-  - stylesheets/extra.css
-
-extra_javascript:
-  - javascripts/mathjax.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

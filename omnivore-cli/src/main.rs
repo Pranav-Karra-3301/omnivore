@@ -69,26 +69,35 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Setup {
-        #[arg(help = "Interactive setup wizard for Omnivore configuration")]
-        _placeholder: Option<String>,
-    },
+    /// Interactive setup wizard for API keys and configuration
+    Setup {},
+    /// Show or modify Omnivore configuration
     Config {
-        #[arg(help = "Show current configuration")]
-        _placeholder: Option<String>,
+        /// Configuration key to get/set (e.g., 'openai_api_key')
+        key: Option<String>,
+        /// Value to set for the configuration key
+        value: Option<String>,
     },
+    /// Crawl websites and extract content
     Crawl {
-        #[arg(help = "URL to start crawling from")]
+        /// URL to start crawling from
         url: String,
 
+        /// Number of parallel workers
         #[arg(short, long, default_value = "10")]
         workers: usize,
 
+        /// Maximum crawl depth
         #[arg(short, long, default_value = "5")]
         depth: u32,
 
-        #[arg(short, long, help = "Output file for results")]
+        /// Output file for results
+        #[arg(short, long)]
         output: Option<PathBuf>,
+
+        /// Output to stdout instead of file
+        #[arg(long)]
+        stdout: bool,
 
         #[arg(long, help = "Respect robots.txt")]
         respect_robots: bool,
@@ -134,29 +143,30 @@ enum Commands {
         template: Option<String>,
     },
 
+    /// Parse and extract content from HTML files
     Parse {
-        #[arg(help = "File to parse")]
+        /// HTML file to parse
         file: PathBuf,
 
-        #[arg(short, long, help = "Parsing rules file")]
+        /// Parsing rules file (YAML)
+        #[arg(short, long)]
         rules: Option<PathBuf>,
 
-        #[arg(short, long, help = "Output file for parsed results")]
+        /// Output file for parsed results
+        #[arg(short, long)]
         output: Option<PathBuf>,
     },
 
-
+    /// Show crawl statistics and session info
     Stats {
-        #[arg(help = "Show statistics for a crawl session")]
+        /// Session ID to show statistics for
         session: Option<String>,
     },
 
     Git(git::GitArgs),
     
-    Docs {
-        #[arg(help = "Open Omnivore documentation in browser")]
-        _placeholder: Option<String>,
-    },
+    /// Open Omnivore documentation in browser
+    Docs {},
 
     #[command(hide = true)]
     GenerateCompletions {
@@ -183,14 +193,15 @@ async fn main() -> Result<()> {
         Commands::Setup { .. } => {
             setup::run_setup().await?;
         }
-        Commands::Config { .. } => {
-            setup::show_config().await?;
+        Commands::Config { key, value } => {
+            setup::handle_config(key, value).await?;
         }
         Commands::Crawl {
             url,
             workers,
             depth,
             output,
+            stdout,
             respect_robots,
             delay,
             include_raw,
@@ -205,7 +216,7 @@ async fn main() -> Result<()> {
             ai,
             template,
         } => {
-            crawl_command(url, workers, depth, output, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables, browser, interact, auto, ai, template).await?;
+            crawl_command(url, workers, depth, output, stdout, respect_robots, delay, include_raw, exclude_urls, organize, format, zip, extract_tables, browser, interact, auto, ai, template).await?;
         }
         Commands::Parse { file, rules, output } => {
             parse_command(file, rules, output).await?;
@@ -356,6 +367,7 @@ async fn crawl_command(
     workers: usize,
     depth: u32,
     output: Option<PathBuf>,
+    stdout: bool,
     respect_robots: bool,
     delay: u64,
     include_raw: bool,
@@ -370,44 +382,58 @@ async fn crawl_command(
     ai: Option<String>,
     template: Option<String>,
 ) -> Result<()> {
-    println!("{}", "🕸️  Omnivore Web Crawler".bold().cyan());
-    println!();
+    // Suppress banner/progress output if stdout mode
+    let quiet = stdout;
+
+    if !quiet {
+        println!("{}", "🕸️  Omnivore Web Crawler".bold().cyan());
+        println!();
+    }
 
     let start_url = Url::parse(&url)?;
-    println!("Starting crawl from: {}", start_url.to_string().green());
-    println!("Configuration:");
-    println!("  Workers: {}", workers.to_string().yellow());
-    println!("  Max depth: {}", depth.to_string().yellow());
-    println!(
-        "  Respect robots.txt: {}",
-        respect_robots.to_string().yellow()
-    );
-    println!("  Delay: {}ms", delay.to_string().yellow());
-    
-    if browser {
-        println!("  Browser mode: {}", "enabled".green());
-        if interact {
-            println!("  Interactive mode: {}", "enabled (will interact with dropdowns/filters)".green());
-        }
+
+    if !quiet {
+        println!("Starting crawl from: {}", start_url.to_string().green());
+        println!("Configuration:");
+        println!("  Workers: {}", workers.to_string().yellow());
+        println!("  Max depth: {}", depth.to_string().yellow());
+        println!(
+            "  Respect robots.txt: {}",
+            respect_robots.to_string().yellow()
+        );
+        println!("  Delay: {}ms", delay.to_string().yellow());
     }
     
+    if !quiet {
+        if browser {
+            println!("  Browser mode: {}", "enabled".green());
+            if interact {
+                println!("  Interactive mode: {}", "enabled (will interact with dropdowns/filters)".green());
+            }
+        }
+
+        // Auto mode overrides individual settings
+        if auto {
+            println!("  Auto mode: {}", "enabled (automatic detection and extraction)".green());
+        }
+
+        if let Some(ref ai_query) = ai {
+            println!("  AI mode: {}", format!("\"{}\"", ai_query).cyan());
+        }
+
+        if let Some(ref template_name) = template {
+            println!("  Template: {}", template_name.yellow());
+        }
+
+        println!();
+    }
+
     // Auto mode overrides individual settings
     let (_auto_tables, _auto_interact, _auto_browser) = if auto {
-        println!("  Auto mode: {}", "enabled (automatic detection and extraction)".green());
         (true, true, true)
     } else {
         (extract_tables, interact, browser)
     };
-    
-    if let Some(ref ai_query) = ai {
-        println!("  AI mode: {}", format!("\"{}\"", ai_query).cyan());
-    }
-    
-    if let Some(ref template_name) = template {
-        println!("  Template: {}", template_name.yellow());
-    }
-    
-    println!();
 
     let config = CrawlConfig {
         max_workers: workers,
@@ -852,29 +878,35 @@ async fn crawl_command(
         return Ok(());
     }
     
-    // Write output to file (for non-ZIP case)
-    tokio::fs::write(&output_path, output_content).await?;
-    
-    println!();
-    if include_raw {
-        println!(
-            "{}  Saved {} pages with raw HTML content to: {}",
-            "✅".bold().green(),
-            crawl_results.len().to_string().cyan(),
-            output_path.display().to_string().yellow()
-        );
+    // Output to stdout or file
+    if stdout {
+        // Output directly to stdout
+        println!("{}", output_content);
     } else {
-        let total_words: usize = crawl_results
-            .iter()
-            .filter_map(|r| r.cleaned_content.as_ref().map(|c| c.word_count))
-            .sum();
-        println!(
-            "{}  Saved {} pages of cleaned content ({} total words) to: {}",
-            "✅".bold().green(),
-            crawl_results.len().to_string().cyan(),
-            total_words.to_string().cyan(),
-            output_path.display().to_string().yellow()
-        );
+        // Write output to file (for non-ZIP case)
+        tokio::fs::write(&output_path, output_content).await?;
+
+        println!();
+        if include_raw {
+            println!(
+                "{}  Saved {} pages with raw HTML content to: {}",
+                "✅".bold().green(),
+                crawl_results.len().to_string().cyan(),
+                output_path.display().to_string().yellow()
+            );
+        } else {
+            let total_words: usize = crawl_results
+                .iter()
+                .filter_map(|r| r.cleaned_content.as_ref().map(|c| c.word_count))
+                .sum();
+            println!(
+                "{}  Saved {} pages of cleaned content ({} total words) to: {}",
+                "✅".bold().green(),
+                crawl_results.len().to_string().cyan(),
+                total_words.to_string().cyan(),
+                output_path.display().to_string().yellow()
+            );
+        }
     }
 
     Ok(())

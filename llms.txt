@@ -1,0 +1,204 @@
+# Omnivore - Universal Web Scraper & Code Extractor
+
+Omnivore is a high-performance Rust CLI tool for web crawling, content extraction, and code analysis. It's designed to produce clean, structured output suitable for LLM consumption.
+
+## Installation
+
+```bash
+cargo install omnivore-cli
+# or
+brew install omnivore
+```
+
+## Commands Overview
+
+### 1. `omnivore crawl <URL>` - Web Crawling
+Crawl websites and extract clean text content.
+
+**Key Options:**
+- `--stdout` - Output to stdout (for piping)
+- `--format <FORMAT>` - Output format: json, markdown, csv, yaml, text
+- `--depth <N>` - Maximum crawl depth (default: 5)
+- `--workers <N>` - Parallel workers (default: 10)
+- `--extract-tables` - Extract tables as CSV
+- `--organize` - Create folder structure with separate files
+- `--exclude-urls` - Remove URLs from output (cleaner for LLMs)
+- `--ai <QUERY>` - Natural language extraction (requires OpenAI API)
+- `--browser` - Use headless Chrome for JavaScript content
+
+**Example Usage:**
+```bash
+# Basic crawl to JSON
+omnivore crawl https://docs.example.com --format json -o docs.json
+
+# Crawl to markdown for LLM consumption
+omnivore crawl https://api.example.com --format markdown --stdout | llm
+
+# Extract specific content with AI
+omnivore crawl https://store.example.com --ai "get all product names and prices"
+
+# Crawl with table extraction
+omnivore crawl https://data.example.com --extract-tables --organize
+```
+
+**Output Structure (JSON):**
+```json
+{
+  "url": "https://example.com",
+  "pages": 10,
+  "words": 5000,
+  "duration_ms": 2500,
+  "timestamp": "2025-01-15T10:30:00Z",
+  "content": [
+    {
+      "url": "https://example.com/page1",
+      "title": "Page Title",
+      "text": "Clean extracted text content...",
+      "words": 500,
+      "links": ["https://example.com/related"]
+    }
+  ]
+}
+```
+
+### 2. `omnivore git <SOURCE>` - Code Analysis
+Extract and analyze code from Git repositories or local directories.
+
+**Key Options:**
+- `--stdout` - Output to stdout
+- `--json` - Output as JSON format
+- `--only <PATTERNS>` - Include only matching file patterns (comma-separated)
+- `--exclude <PATTERNS>` - Exclude matching patterns
+- `--depth <N>` - Clone depth for remote repos
+- `--max-file-size <BYTES>` - Skip files larger than size
+
+**Example Usage:**
+```bash
+# Analyze local repository
+omnivore git . --stdout
+
+# Analyze remote repository
+omnivore git https://github.com/user/repo --output analysis.txt
+
+# Extract only specific file types
+omnivore git ./project --only "*.rs,*.toml" --stdout
+
+# JSON output for programmatic use
+omnivore git ./project --json --stdout
+```
+
+**Output Structure (JSON):**
+```json
+{
+  "metadata": {
+    "project_type": "Web Application",
+    "description": "A Next.js project",
+    "main_language": "TypeScript",
+    "frameworks": ["Next.js", "React"],
+    "build_tools": ["npm", "webpack"],
+    "total_files": 50
+  },
+  "sections": [
+    {
+      "name": "Source Code",
+      "description": "Main application source code",
+      "files": [
+        {
+          "path": "src/index.ts",
+          "content": "// file contents..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 3. `omnivore parse <FILE>` - HTML Parsing
+Parse and extract content from local HTML files.
+
+**Example:**
+```bash
+omnivore parse page.html -o parsed.json
+```
+
+### 4. `omnivore config [KEY] [VALUE]` - Configuration
+Get or set configuration values.
+
+**Available Keys:**
+- `openai_api_key` - OpenAI API key for AI features
+- `model` - AI model (gpt-4, gpt-3.5-turbo)
+- `max_workers` - Default parallel workers
+- `max_depth` - Default crawl depth
+- `format` - Default output format
+- `rate_limit` - Request delay in ms
+
+**Example:**
+```bash
+omnivore config openai_api_key sk-xxx...
+omnivore config model gpt-4
+omnivore config  # Show all config
+```
+
+### 5. `omnivore setup` - Interactive Setup
+Run interactive configuration wizard for API keys and settings.
+
+### 6. `omnivore docs` - Documentation
+Open documentation in browser.
+
+## Output Formats
+
+| Format | Best For | Description |
+|--------|----------|-------------|
+| `json` | APIs, programmatic use | Structured data with metadata |
+| `markdown` | LLM consumption | Clean text with headers |
+| `text` | Simple processing | Plain text output |
+| `csv` | Spreadsheets | Tabular data |
+| `yaml` | Config files | Human-readable structured |
+
+## Tips for LLM Workflows
+
+1. **Clean output for context:** Use `--exclude-urls --format markdown` for cleaner text
+2. **Pipe directly to LLM:** `omnivore crawl URL --stdout --format text | llm`
+3. **Extract code for analysis:** `omnivore git . --stdout | llm "explain this codebase"`
+4. **Structured extraction:** Use `--ai "extract key points"` for targeted content
+
+## Smart Filtering (git command)
+
+The git command automatically excludes:
+- Package managers (node_modules, vendor, __pycache__)
+- Build outputs (dist, build, target, .next)
+- Binary files and large models (*.pt, *.pkl)
+- IDE configs (.idea, .vscode)
+- Lock files and caches
+
+Override with `--only` or `--include` flags.
+
+## Environment Variables
+
+- `OPENAI_API_KEY` - OpenAI API key
+- `OMNIVORE_CONFIG_DIR` - Custom config directory
+- `OMNIVORE_LOG_LEVEL` - Log level (debug, info, warn, error)
+
+## Common Patterns
+
+```bash
+# Documentation to context
+omnivore crawl https://docs.example.com -d 3 --format markdown -o docs.md
+
+# Codebase summary for LLM
+omnivore git . --stdout | head -1000 > context.txt
+
+# API reference extraction
+omnivore crawl https://api.example.com --ai "extract all endpoints with parameters"
+
+# Multi-site crawl (bash)
+for site in site1.com site2.com; do
+  omnivore crawl "https://$site" -o "${site}.json"
+done
+```
+
+## Links
+
+- Documentation: https://ov.pranavkarra.me/docs
+- Repository: https://github.com/Pranav-Karra-3301/omnivore
+- Issues: https://github.com/Pranav-Karra-3301/omnivore/issues

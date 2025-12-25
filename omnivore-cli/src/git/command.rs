@@ -12,9 +12,10 @@ use super::{
     source::{SourceAcquisition, SourceType},
 };
 
+/// Extract and analyze code from Git repositories or local directories
 #[derive(Args, Debug)]
 pub struct GitArgs {
-    #[arg(help = "Repository source (URL or local path)")]
+    /// Repository source (URL or local path)
     pub source: String,
 
     #[arg(

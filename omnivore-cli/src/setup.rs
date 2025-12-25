@@ -578,3 +578,83 @@ fn bool_status(value: bool) -> String {
         "✗".dimmed().to_string()
     }
 }
+
+/// Handle config get/set command
+pub async fn handle_config(key: Option<String>, value: Option<String>) -> Result<()> {
+    match (key, value) {
+        // Set a specific config value
+        (Some(k), Some(v)) => {
+            let mut config = OmnivoreConfig::load().unwrap_or_default();
+
+            match k.as_str() {
+                "openai_api_key" | "api_key" => {
+                    config.ai.openai_api_key = Some(v);
+                    println!("{}", "✓ OpenAI API key updated".green());
+                }
+                "model" | "ai_model" => {
+                    config.ai.model = v;
+                    println!("{}", format!("✓ AI model set to: {}", config.ai.model).green());
+                }
+                "max_workers" | "workers" => {
+                    config.advanced.max_workers = v.parse().unwrap_or(10);
+                    println!("{}", format!("✓ Max workers set to: {}", config.advanced.max_workers).green());
+                }
+                "max_depth" | "depth" => {
+                    config.advanced.max_depth = v.parse().unwrap_or(5);
+                    println!("{}", format!("✓ Max depth set to: {}", config.advanced.max_depth).green());
+                }
+                "format" | "default_format" => {
+                    config.output.default_format = v;
+                    println!("{}", format!("✓ Default format set to: {}", config.output.default_format).green());
+                }
+                "rate_limit" | "delay" => {
+                    config.advanced.rate_limit_ms = v.parse().unwrap_or(100);
+                    println!("{}", format!("✓ Rate limit set to: {}ms", config.advanced.rate_limit_ms).green());
+                }
+                _ => {
+                    println!("{}", format!("✗ Unknown config key: {}", k).red());
+                    println!("{}", "Available keys: openai_api_key, model, max_workers, max_depth, format, rate_limit".dimmed());
+                    return Ok(());
+                }
+            }
+
+            config.save()?;
+        }
+        // Get a specific config value
+        (Some(k), None) => {
+            let config = OmnivoreConfig::load().unwrap_or_default();
+
+            match k.as_str() {
+                "openai_api_key" | "api_key" => {
+                    match config.ai.openai_api_key {
+                        Some(key) if key.len() > 8 => {
+                            println!("{}...{}", &key[..4], &key[key.len()-4..]);
+                        }
+                        Some(_) => println!("****"),
+                        None => println!("{}", "Not set".dimmed()),
+                    }
+                }
+                "model" | "ai_model" => println!("{}", config.ai.model),
+                "max_workers" | "workers" => println!("{}", config.advanced.max_workers),
+                "max_depth" | "depth" => println!("{}", config.advanced.max_depth),
+                "format" | "default_format" => println!("{}", config.output.default_format),
+                "rate_limit" | "delay" => println!("{}", config.advanced.rate_limit_ms),
+                _ => {
+                    println!("{}", format!("✗ Unknown config key: {}", k).red());
+                    println!("{}", "Available keys: openai_api_key, model, max_workers, max_depth, format, rate_limit".dimmed());
+                }
+            }
+        }
+        // Show all config
+        (None, None) => {
+            show_config().await?;
+        }
+        // Invalid: value without key
+        (None, Some(_)) => {
+            println!("{}", "✗ Must specify config key when setting a value".red());
+            println!("{}", "Usage: omnivore config <KEY> <VALUE>".dimmed());
+        }
+    }
+
+    Ok(())
+}

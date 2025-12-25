@@ -596,20 +596,44 @@ pub async fn handle_config(key: Option<String>, value: Option<String>) -> Result
                     println!("{}", format!("✓ AI model set to: {}", config.ai.model).green());
                 }
                 "max_workers" | "workers" => {
-                    config.advanced.max_workers = v.parse().unwrap_or(10);
-                    println!("{}", format!("✓ Max workers set to: {}", config.advanced.max_workers).green());
+                    match v.parse() {
+                        Ok(value) => {
+                            config.advanced.max_workers = value;
+                            println!("{}", format!("✓ Max workers set to: {}", value).green());
+                        }
+                        Err(_) => {
+                            println!("{}", format!("✗ Invalid number: {}", v).red());
+                            return Ok(());
+                        }
+                    }
                 }
                 "max_depth" | "depth" => {
-                    config.advanced.max_depth = v.parse().unwrap_or(5);
-                    println!("{}", format!("✓ Max depth set to: {}", config.advanced.max_depth).green());
+                    match v.parse() {
+                        Ok(value) => {
+                            config.advanced.max_depth = value;
+                            println!("{}", format!("✓ Max depth set to: {}", value).green());
+                        }
+                        Err(_) => {
+                            println!("{}", format!("✗ Invalid number: {}", v).red());
+                            return Ok(());
+                        }
+                    }
                 }
                 "format" | "default_format" => {
                     config.output.default_format = v;
                     println!("{}", format!("✓ Default format set to: {}", config.output.default_format).green());
                 }
                 "rate_limit" | "delay" => {
-                    config.advanced.rate_limit_ms = v.parse().unwrap_or(100);
-                    println!("{}", format!("✓ Rate limit set to: {}ms", config.advanced.rate_limit_ms).green());
+                    match v.parse() {
+                        Ok(value) => {
+                            config.advanced.rate_limit_ms = value;
+                            println!("{}", format!("✓ Rate limit set to: {}ms", value).green());
+                        }
+                        Err(_) => {
+                            println!("{}", format!("✗ Invalid number: {}", v).red());
+                            return Ok(());
+                        }
+                    }
                 }
                 _ => {
                     println!("{}", format!("✗ Unknown config key: {}", k).red());

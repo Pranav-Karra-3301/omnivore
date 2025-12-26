@@ -27,7 +27,7 @@ pub struct FileFilter {
 impl FileFilter {
     pub fn new(root_path: PathBuf) -> Self {
         let default_excludes = build_default_excludes();
-        
+
         Self {
             root_path,
             include_patterns: None,
@@ -88,7 +88,7 @@ impl FileFilter {
 
         for entry in walker {
             let entry = entry?;
-            
+
             if !entry.file_type().is_file() {
                 continue;
             }
@@ -116,7 +116,7 @@ impl FileFilter {
 
     fn build_gitignore(&self) -> Result<Gitignore> {
         let mut builder = GitignoreBuilder::new(&self.root_path);
-        
+
         for entry in WalkDir::new(&self.root_path)
             .follow_links(false)
             .into_iter()
@@ -128,22 +128,23 @@ impl FileFilter {
                 builder.add(gitignore_path);
             }
         }
-        
+
         Ok(builder.build()?)
     }
 
     fn should_traverse_dir(&self, entry: &DirEntry, gitignore: &Option<Gitignore>) -> bool {
         let path = entry.path();
-        let relative_path = path
-            .strip_prefix(&self.root_path)
-            .unwrap_or(path);
+        let relative_path = path.strip_prefix(&self.root_path).unwrap_or(path);
 
         if self.default_excludes.is_match(relative_path) {
             return false;
         }
 
         if let Some(ref gi) = gitignore {
-            if gi.matched(relative_path, entry.file_type().is_dir()).is_ignore() {
+            if gi
+                .matched(relative_path, entry.file_type().is_dir())
+                .is_ignore()
+            {
                 return false;
             }
         }
@@ -196,7 +197,7 @@ impl FileFilter {
 
 fn build_default_excludes() -> GlobSet {
     let mut builder = GlobSetBuilder::new();
-    
+
     let patterns = vec![
         ".git/**",
         ".svn/**",
@@ -224,33 +225,25 @@ fn build_default_excludes() -> GlobSet {
         "**/*.swo",
         "**/*~",
     ];
-    
+
     for pattern in patterns {
         if let Ok(glob) = Glob::new(pattern) {
             builder.add(glob);
         }
     }
-    
+
     builder.build().expect("Failed to build default excludes")
 }
 
 fn is_likely_binary(path: &Path) -> Result<bool> {
-    let extension = path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .unwrap_or("");
+    let extension = path.extension().and_then(|ext| ext.to_str()).unwrap_or("");
 
     let binary_extensions = HashSet::from([
-        "exe", "dll", "so", "dylib", "a", "lib", "o", "obj",
-        "png", "jpg", "jpeg", "gif", "bmp", "ico", "svg", "webp",
-        "mp3", "mp4", "avi", "mov", "wmv", "flv", "webm", "m4a", "wav",
-        "zip", "tar", "gz", "bz2", "xz", "7z", "rar",
-        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-        "ttf", "otf", "woff", "woff2", "eot",
-        "db", "sqlite", "sqlite3",
-        "jar", "war", "ear",
-        "pyc", "pyo", "class",
-        "min.js", "min.css",
+        "exe", "dll", "so", "dylib", "a", "lib", "o", "obj", "png", "jpg", "jpeg", "gif", "bmp",
+        "ico", "svg", "webp", "mp3", "mp4", "avi", "mov", "wmv", "flv", "webm", "m4a", "wav",
+        "zip", "tar", "gz", "bz2", "xz", "7z", "rar", "pdf", "doc", "docx", "xls", "xlsx", "ppt",
+        "pptx", "ttf", "otf", "woff", "woff2", "eot", "db", "sqlite", "sqlite3", "jar", "war",
+        "ear", "pyc", "pyo", "class", "min.js", "min.css",
     ]);
 
     if binary_extensions.contains(extension) {
@@ -263,7 +256,7 @@ fn is_likely_binary(path: &Path) -> Result<bool> {
             let null_count = sample.iter().filter(|&&b| b == 0).count();
             return Ok(null_count > 0);
         }
-        
+
         let null_count = contents.iter().filter(|&&b| b == 0).count();
         Ok(null_count > 0)
     } else {

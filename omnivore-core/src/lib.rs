@@ -1,4 +1,7 @@
+pub mod ai;
+pub mod config;
 pub mod crawler;
+pub mod detector;
 pub mod error;
 pub mod extractor;
 pub mod graph;
@@ -6,9 +9,6 @@ pub mod intelligence;
 pub mod parser;
 pub mod storage;
 pub mod table_extractor;
-pub mod config;
-pub mod ai;
-pub mod detector;
 
 #[cfg(feature = "browser")]
 pub mod browser;

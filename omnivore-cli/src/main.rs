@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
 use colored::*;
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use omnivore_core::{crawler::Crawler, CrawlConfig, CrawlResult, CrawlStats, PolitenessConfig, table_extractor::TableData};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -455,21 +455,27 @@ async fn crawl_command(
         {
             use omnivore_core::crawler::browser::BrowserEngine;
             
-            println!("{}", "🌐 Starting browser engine...".bold().yellow());
-            println!("Note: Ensure ChromeDriver is running at localhost:9515");
-            println!();
+            if !quiet {
+                println!("{}", "🌐 Starting browser engine...".bold().yellow());
+                println!("Note: Ensure ChromeDriver is running at localhost:9515");
+                println!();
+            }
             
             let mut browser_engine = BrowserEngine::new().await?;
             browser_engine.connect().await.context("Failed to connect to browser. Make sure ChromeDriver is running (chromedriver --port=9515)")?;
             
             let crawl_results = if interact {
-                println!("Crawling with interactive mode (dropdowns and filters)...");
+                if !quiet {
+                    println!("Crawling with interactive mode (dropdowns and filters)...");
+                }
                 let dynamic_content = browser_engine.crawl_with_interactions(start_url.clone()).await?;
                 
                 // Convert dynamic content to regular crawl results
                 vec![convert_dynamic_to_crawl_result(dynamic_content)?]
             } else {
-                println!("Crawling with browser (JavaScript rendering)...");
+                if !quiet {
+                    println!("Crawling with browser (JavaScript rendering)...");
+                }
                 vec![browser_engine.crawl_dynamic(start_url.clone()).await?]
             };
             
@@ -483,8 +489,14 @@ async fn crawl_command(
         
         #[cfg(not(all()))]
         {
-            println!("{}", "⚠️  Browser mode requires the 'browser' feature to be enabled".yellow());
-            println!("Rebuild with: cargo build --features browser");
+            // In stdout mode, keep stdout clean and report to stderr instead.
+            if quiet {
+                eprintln!("{}", "⚠️  Browser mode requires the 'browser' feature to be enabled".yellow());
+                eprintln!("Rebuild with: cargo build --features browser");
+            } else {
+                println!("{}", "⚠️  Browser mode requires the 'browser' feature to be enabled".yellow());
+                println!("Rebuild with: cargo build --features browser");
+            }
             return Err(anyhow::anyhow!("Browser feature not enabled"));
         }
     }
@@ -494,6 +506,9 @@ async fn crawl_command(
     crawler.add_seed(start_url.clone()).await?;
 
     let progress = ProgressBar::new_spinner();
+    if quiet {
+        progress.set_draw_target(ProgressDrawTarget::hidden());
+    }
     progress.set_style(
         ProgressStyle::default_spinner()
             .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
@@ -528,8 +543,10 @@ async fn crawl_command(
     
     // If auto mode is enabled, perform automatic extraction
     if auto {
-        println!();
-        println!("{}", "🤖 Auto Mode: Performing intelligent extraction...".bold().cyan());
+        if !quiet {
+            println!();
+            println!("{}", "🤖 Auto Mode: Performing intelligent extraction...".bold().cyan());
+        }
         
         // Load config for extraction settings
         let omnivore_config = omnivore_core::config::OmnivoreConfig::load().unwrap_or_default();
@@ -544,33 +561,45 @@ async fn crawl_command(
             
             if omnivore_config.extraction.auto_detect_tables && !detected.tables.is_empty() {
                 extracted.insert("tables".to_string(), serde_json::to_value(&detected.tables)?);
-                println!("  Found {} tables in {}", detected.tables.len().to_string().green(), result.url);
+                if !quiet {
+                    println!("  Found {} tables in {}", detected.tables.len().to_string().green(), result.url);
+                }
             }
             
             if omnivore_config.extraction.auto_detect_forms && !detected.forms.is_empty() {
                 extracted.insert("forms".to_string(), serde_json::to_value(&detected.forms)?);
-                println!("  Found {} forms in {}", detected.forms.len().to_string().green(), result.url);
+                if !quiet {
+                    println!("  Found {} forms in {}", detected.forms.len().to_string().green(), result.url);
+                }
             }
             
             if omnivore_config.extraction.auto_detect_dropdowns && !detected.dropdowns.is_empty() {
                 extracted.insert("dropdowns".to_string(), serde_json::to_value(&detected.dropdowns)?);
-                println!("  Found {} dropdowns in {}", detected.dropdowns.len().to_string().green(), result.url);
+                if !quiet {
+                    println!("  Found {} dropdowns in {}", detected.dropdowns.len().to_string().green(), result.url);
+                }
             }
             
             if omnivore_config.extraction.auto_detect_pagination && detected.pagination.is_some() {
                 extracted.insert("pagination".to_string(), serde_json::to_value(&detected.pagination)?);
-                println!("  Found pagination in {}", result.url);
+                if !quiet {
+                    println!("  Found pagination in {}", result.url);
+                }
             }
             
             if omnivore_config.extraction.auto_detect_downloads && !detected.downloads.is_empty() {
                 extracted.insert("downloads".to_string(), serde_json::to_value(&detected.downloads)?);
-                println!("  Found {} downloadable files in {}", detected.downloads.len().to_string().green(), result.url);
+                if !quiet {
+                    println!("  Found {} downloadable files in {}", detected.downloads.len().to_string().green(), result.url);
+                }
             }
             
             let contact_count = detected.contacts.emails.len() + detected.contacts.phones.len();
             if contact_count > 0 {
                 extracted.insert("contacts".to_string(), serde_json::to_value(&detected.contacts)?);
-                println!("  Found {} contact details in {}", contact_count.to_string().green(), result.url);
+                if !quiet {
+                    println!("  Found {} contact details in {}", contact_count.to_string().green(), result.url);
+                }
             }
             
             if !detected.interactive.is_empty() {
@@ -589,13 +618,17 @@ async fn crawl_command(
             result.extracted_data = serde_json::Value::Object(extracted);
         }
         
-        println!("{}", "✓ Automatic extraction complete!".green());
+        if !quiet {
+            println!("{}", "✓ Automatic extraction complete!".green());
+        }
     }
     
     // Handle AI extraction if specified
     if let Some(ref ai_query) = ai {
-        println!();
-        println!("{}", format!("🤖 AI Mode: Processing query \"{}\"...", ai_query).bold().cyan());
+        if !quiet {
+            println!();
+            println!("{}", format!("🤖 AI Mode: Processing query \"{}\"...", ai_query).bold().cyan());
+        }
         
         let omnivore_config = omnivore_core::config::OmnivoreConfig::load().unwrap_or_default();
         
@@ -606,34 +639,48 @@ async fn crawl_command(
                 match smart_extractor.process_natural_language(ai_query, &result.url, &result.content).await {
                     Ok(extracted) => {
                         result.extracted_data = extracted;
-                        println!("  ✓ Extracted data from {}", result.url.green());
+                        if !quiet {
+                            println!("  ✓ Extracted data from {}", result.url.green());
+                        }
                     }
                     Err(e) => {
-                        println!("  ✗ Failed to extract from {}: {}", result.url.red(), e);
+                        if quiet {
+                            eprintln!("  ✗ Failed to extract from {}: {}", result.url.red(), e);
+                        } else {
+                            println!("  ✗ Failed to extract from {}: {}", result.url.red(), e);
+                        }
                     }
                 }
             }
         } else {
-            println!("{}", "⚠️  OpenAI API key not configured. Run 'omnivore setup' to configure.".yellow());
+            // In stdout mode, keep stdout clean and report to stderr instead.
+            if quiet {
+                eprintln!("{}", "⚠️  OpenAI API key not configured. Run 'omnivore setup' to configure.".yellow());
+            } else {
+                println!("{}", "⚠️  OpenAI API key not configured. Run 'omnivore setup' to configure.".yellow());
+            }
         }
     }
     
-    println!();
-    println!("{}", "📊 Final Statistics:".bold().green());
-    println!(
-        "  Total URLs crawled: {}",
-        final_stats.total_urls.to_string().cyan()
-    );
-    println!(
-        "  Successful: {}",
-        final_stats.successful.to_string().green()
-    );
-    println!("  Failed: {}", final_stats.failed.to_string().red());
-    println!("  Time elapsed: {:?}", final_stats.elapsed_time);
-    println!(
-        "  Pages with content: {}",
-        crawl_results.len().to_string().cyan()
-    );
+    // Keep stdout clean in --stdout mode (piping workflow).
+    if !quiet {
+        println!();
+        println!("{}", "📊 Final Statistics:".bold().green());
+        println!(
+            "  Total URLs crawled: {}",
+            final_stats.total_urls.to_string().cyan()
+        );
+        println!(
+            "  Successful: {}",
+            final_stats.successful.to_string().green()
+        );
+        println!("  Failed: {}", final_stats.failed.to_string().red());
+        println!("  Time elapsed: {:?}", final_stats.elapsed_time);
+        println!(
+            "  Pages with content: {}",
+            crawl_results.len().to_string().cyan()
+        );
+    }
 
     // Handle organized output
     if organize {
@@ -733,7 +780,9 @@ async fn crawl_command(
         let index_path = output_dir.join("index.json");
         tokio::fs::write(&index_path, serde_json::to_string_pretty(&index_data)?).await?;
         
-        println!();
+        if !quiet {
+            println!();
+        }
         // Compress to ZIP if requested
         if zip {
             let zip_path = PathBuf::from(format!("{}.zip", output_dir.display()));
@@ -762,19 +811,23 @@ async fn crawl_command(
             // Remove the original directory
             tokio::fs::remove_dir_all(&output_dir).await?;
             
-            println!(
-                "{}  Compressed {} pages into: {}",
-                "📦".bold().green(),
-                crawl_results.len().to_string().cyan(),
-                zip_path.display().to_string().yellow()
-            );
+            if !quiet {
+                println!(
+                    "{}  Compressed {} pages into: {}",
+                    "📦".bold().green(),
+                    crawl_results.len().to_string().cyan(),
+                    zip_path.display().to_string().yellow()
+                );
+            }
         } else {
-            println!(
-                "{}  Organized {} pages into folder: {}",
-                "✅".bold().green(),
-                crawl_results.len().to_string().cyan(),
-                output_dir.display().to_string().yellow()
-            );
+            if !quiet {
+                println!(
+                    "{}  Organized {} pages into folder: {}",
+                    "✅".bold().green(),
+                    crawl_results.len().to_string().cyan(),
+                    output_dir.display().to_string().yellow()
+                );
+            }
         }
         
         return Ok(());
@@ -869,12 +922,14 @@ async fn crawl_command(
         // Remove the original file
         tokio::fs::remove_file(&output_path).await?;
         
-        println!();
-        println!(
-            "{}  Compressed output to: {}",
-            "📦".bold().green(),
-            zip_path.display().to_string().yellow()
-        );
+        if !quiet {
+            println!();
+            println!(
+                "{}  Compressed output to: {}",
+                "📦".bold().green(),
+                zip_path.display().to_string().yellow()
+            );
+        }
         return Ok(());
     }
     

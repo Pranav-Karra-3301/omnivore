@@ -9,7 +9,7 @@ use omnivore_core::{
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read as IORead, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use url::Url;
 
 mod git;
@@ -301,7 +301,7 @@ fn print_banner() {
 
 fn generate_default_filename(url: &Url, suffix: &str, format: &OutputFormat) -> PathBuf {
     let domain = url.domain().unwrap_or("unknown");
-    let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+    let sanitized_domain = domain.replace(['.', '/'], "_");
     let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
     let ext = match format {
         OutputFormat::Json => "json",
@@ -342,7 +342,7 @@ fn format_output_content(
                 md.push_str(&format!("**Words:** {}\n\n", page.words));
 
                 if let Some(text) = &page.text {
-                    md.push_str(&text);
+                    md.push_str(text);
                     md.push_str("\n\n");
                 }
 
@@ -351,7 +351,7 @@ fn format_output_content(
                     for link in &page.links {
                         md.push_str(&format!("- {}\n", link));
                     }
-                    md.push_str("\n");
+                    md.push('\n');
                 }
                 md.push_str("---\n\n");
             }
@@ -360,7 +360,7 @@ fn format_output_content(
 
         OutputFormat::Csv => {
             let mut wtr = csv::Writer::from_writer(vec![]);
-            wtr.write_record(&["url", "title", "text", "word_count", "links"])?;
+            wtr.write_record(["url", "title", "text", "word_count", "links"])?;
 
             for page in &clean_output.content {
                 let links = if exclude_urls {
@@ -368,7 +368,7 @@ fn format_output_content(
                 } else {
                     page.links.join(", ")
                 };
-                wtr.write_record(&[
+                wtr.write_record([
                     &page.url,
                     page.title.as_ref().unwrap_or(&String::new()),
                     page.text.as_ref().unwrap_or(&String::new()),
@@ -400,7 +400,7 @@ fn format_output_content(
                 txt.push_str(&format!("Words: {}\n\n", page.words));
 
                 if let Some(text) = &page.text {
-                    txt.push_str(&text);
+                    txt.push_str(text);
                     txt.push_str("\n\n");
                 }
 
@@ -410,13 +410,14 @@ fn format_output_content(
                         txt.push_str(&format!("  - {}\n", link));
                     }
                 }
-                txt.push_str("\n");
+                txt.push('\n');
             }
             Ok(txt)
         }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn crawl_command(
     url: String,
     workers: usize,
@@ -512,7 +513,6 @@ async fn crawl_command(
 
     // Handle browser mode separately
     if browser {
-        #[cfg(all())]
         {
             use omnivore_core::crawler::browser::BrowserEngine;
 
@@ -828,7 +828,7 @@ async fn crawl_command(
     if organize {
         // Create organized folder structure
         let domain = start_url.domain().unwrap_or("unknown");
-        let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+        let sanitized_domain = domain.replace(['.', '/'], "_");
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let output_dir = output
             .unwrap_or_else(|| PathBuf::from(format!("{}_{}_crawl", sanitized_domain, timestamp)));
@@ -878,29 +878,30 @@ async fn crawl_command(
                 tokio::fs::write(&page_file, page_json).await?;
 
                 // Save tables as CSV if requested
-                if extract_tables && tables_dir.is_some() {
-                    let tables_dir = tables_dir.as_ref().unwrap();
-                    for (table_idx, table) in cleaned.tables.iter().enumerate() {
-                        let table_title = table
-                            .title
-                            .as_ref()
-                            .map(|t| t.replace(" ", "_").replace("/", "_"))
-                            .unwrap_or_else(|| format!("table_{}", table_idx + 1));
+                if extract_tables {
+                    if let Some(tables_dir) = tables_dir.as_ref() {
+                        for (table_idx, table) in cleaned.tables.iter().enumerate() {
+                            let table_title = table
+                                .title
+                                .as_ref()
+                                .map(|t| t.replace(" ", "_").replace("/", "_"))
+                                .unwrap_or_else(|| format!("table_{}", table_idx + 1));
 
-                        let csv_filename = format!("page_{:04}_{}.csv", idx + 1, table_title);
-                        let csv_path = tables_dir.join(&csv_filename);
+                            let csv_filename = format!("page_{:04}_{}.csv", idx + 1, table_title);
+                            let csv_path = tables_dir.join(&csv_filename);
 
-                        let csv_content = table.to_csv();
-                        tokio::fs::write(&csv_path, csv_content).await?;
+                            let csv_content = table.to_csv();
+                            tokio::fs::write(&csv_path, csv_content).await?;
 
-                        all_tables.push(serde_json::json!({
-                            "page": idx + 1,
-                            "url": result.url.clone(),
-                            "table_title": table.title.clone(),
-                            "csv_file": csv_filename,
-                            "rows": table.rows.len(),
-                            "columns": table.headers.len(),
-                        }));
+                            all_tables.push(serde_json::json!({
+                                "page": idx + 1,
+                                "url": result.url.clone(),
+                                "table_title": table.title.clone(),
+                                "csv_file": csv_filename,
+                                "rows": table.rows.len(),
+                                "columns": table.headers.len(),
+                            }));
+                        }
                     }
                 }
 
@@ -971,15 +972,13 @@ async fn crawl_command(
                     zip_path.display().to_string().yellow()
                 );
             }
-        } else {
-            if !quiet {
-                println!(
-                    "{}  Organized {} pages into folder: {}",
-                    "✅".bold().green(),
-                    crawl_results.len().to_string().cyan(),
-                    output_dir.display().to_string().yellow()
-                );
-            }
+        } else if !quiet {
+            println!(
+                "{}  Organized {} pages into folder: {}",
+                "✅".bold().green(),
+                crawl_results.len().to_string().cyan(),
+                output_dir.display().to_string().yellow()
+            );
         }
 
         return Ok(());
@@ -1005,7 +1004,7 @@ async fn crawl_command(
             .filter_map(|result| {
                 if let Some(ref cleaned) = result.cleaned_content {
                     // Include if has structured content or meaningful text
-                    let has_content = cleaned.content.as_ref().map_or(false, |c| c.len() > 50)
+                    let has_content = cleaned.content.as_ref().is_some_and(|c| c.len() > 50)
                         || cleaned.structured.is_some();
 
                     if has_content {
@@ -1125,7 +1124,7 @@ async fn crawl_command(
     Ok(())
 }
 
-fn generate_parse_filename(input_file: &PathBuf) -> PathBuf {
+fn generate_parse_filename(input_file: &Path) -> PathBuf {
     let file_stem = input_file
         .file_stem()
         .and_then(|s| s.to_str())
@@ -1197,7 +1196,7 @@ async fn parse_command(
         output_path.display().to_string().yellow()
     );
 
-    if text_preview.len() > 0 {
+    if !text_preview.is_empty() {
         println!();
         println!("Text preview:");
         println!("{}", text_preview.dimmed());
@@ -1251,7 +1250,6 @@ async fn docs_command() -> Result<()> {
     Ok(())
 }
 
-#[cfg(all())]
 fn convert_dynamic_to_crawl_result(
     dynamic: omnivore_core::crawler::browser::DynamicContent,
 ) -> Result<CrawlResult> {
@@ -1290,6 +1288,7 @@ fn convert_dynamic_to_crawl_result(
 }
 
 #[allow(dead_code)]
+#[allow(clippy::too_many_arguments)]
 async fn handle_crawl_results(
     crawl_results: Vec<CrawlResult>,
     start_url: &Url,
@@ -1321,7 +1320,7 @@ async fn handle_crawl_results(
     if organize {
         // Use existing organize logic
         let domain = start_url.domain().unwrap_or("unknown");
-        let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+        let sanitized_domain = domain.replace(['.', '/'], "_");
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let output_dir = output
             .unwrap_or_else(|| PathBuf::from(format!("{}_{}_crawl", sanitized_domain, timestamp)));

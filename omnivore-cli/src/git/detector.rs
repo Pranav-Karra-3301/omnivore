@@ -15,6 +15,7 @@ pub struct CodebaseInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum ProjectType {
     WebApplication,
     Library,
@@ -27,6 +28,7 @@ pub enum ProjectType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Language {
     Rust,
     JavaScript,
@@ -123,7 +125,8 @@ impl CodebaseDetector {
     }
 
     fn detect_by_config_files(&self, info: &mut CodebaseInfo) -> Result<()> {
-        let config_checks: Vec<(&str, fn(&Path, &mut CodebaseInfo) -> Result<()>)> = vec![
+        type ConfigCheck = (&'static str, fn(&Path, &mut CodebaseInfo) -> Result<()>);
+        let config_checks: Vec<ConfigCheck> = vec![
             ("package.json", Self::check_nodejs_project),
             ("Cargo.toml", Self::check_rust_project),
             ("go.mod", Self::check_go_project),
@@ -165,18 +168,18 @@ impl CodebaseDetector {
             info.languages.push(Language::JavaScript);
         }
 
-        if json.get("dependencies").is_some() || json.get("devDependencies").is_some() {
-            if !info.build_tools.contains(&BuildTool::Npm) {
-                info.build_tools.push(BuildTool::Npm);
-            }
+        if (json.get("dependencies").is_some() || json.get("devDependencies").is_some())
+            && !info.build_tools.contains(&BuildTool::Npm)
+        {
+            info.build_tools.push(BuildTool::Npm);
         }
 
         let deps = json.get("dependencies").and_then(|d| d.as_object());
         let dev_deps = json.get("devDependencies").and_then(|d| d.as_object());
 
         let check_dep = |name: &str| -> bool {
-            deps.map_or(false, |d| d.contains_key(name))
-                || dev_deps.map_or(false, |d| d.contains_key(name))
+            deps.is_some_and(|d| d.contains_key(name))
+                || dev_deps.is_some_and(|d| d.contains_key(name))
         };
 
         if check_dep("next") {

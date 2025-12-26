@@ -4,7 +4,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct OmnivoreConfig {
     #[serde(default)]
     pub ai: AiConfig,
@@ -98,19 +98,6 @@ pub struct AdvancedConfig {
     pub rate_limit_ms: u64,
     pub retry_attempts: u32,
     pub deduplication: bool,
-}
-
-impl Default for OmnivoreConfig {
-    fn default() -> Self {
-        Self {
-            ai: AiConfig::default(),
-            extraction: ExtractionConfig::default(),
-            browser: BrowserConfig::default(),
-            output: OutputConfig::default(),
-            templates: TemplateConfig::default(),
-            advanced: AdvancedConfig::default(),
-        }
-    }
 }
 
 impl Default for AiConfig {

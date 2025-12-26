@@ -384,9 +384,8 @@ impl ContentExtractor {
 
     #[allow(dead_code)]
     fn parse_course_dl(&self, _dl: scraper::ElementRef) -> Vec<CourseInfo> {
-        let courses = Vec::new();
         // TODO: Implementation for definition list parsing
-        courses
+        Vec::new()
     }
 
     fn extract_credits(&self, text: &str) -> Option<String> {
@@ -514,7 +513,7 @@ impl ContentExtractor {
 
         // Walk up the DOM tree to check for content containers
         let current = element;
-        for _ in 0..10 {
+        if (0..10).next().is_some() {
             // Check up to 10 levels
             for selector_str in &content_selectors {
                 if let Ok(selector) = Selector::parse(selector_str) {
@@ -526,7 +525,6 @@ impl ContentExtractor {
 
             // Try to get parent - this is a simplified check
             // In real implementation, we'd need proper parent traversal
-            break;
         }
 
         false

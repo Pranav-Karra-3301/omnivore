@@ -778,7 +778,7 @@ impl UniversalDetector {
                     table.selector, table.row_count, table.likely_data_type
                 ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Forms
@@ -791,7 +791,7 @@ impl UniversalDetector {
                     form.fields.len()
                 ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Dropdowns
@@ -806,7 +806,7 @@ impl UniversalDetector {
                     dropdown.selector, dropdown.option_count
                 ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Pagination
@@ -815,7 +815,7 @@ impl UniversalDetector {
             if let Some(total) = pagination.total_pages {
                 report.push_str(&format!("  Total pages: {}\n", total));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Downloads
@@ -827,7 +827,7 @@ impl UniversalDetector {
             for download in &detected.downloads {
                 report.push_str(&format!("  - {} ({})\n", download.text, download.file_type));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Contact Info
@@ -845,7 +845,7 @@ impl UniversalDetector {
                     detected.contacts.phones.join(", ")
                 ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Interactive Elements
@@ -879,7 +879,7 @@ impl UniversalDetector {
             if tabs > 0 {
                 report.push_str(&format!("  Tabs: {}\n", tabs));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Media
@@ -896,7 +896,7 @@ impl UniversalDetector {
             if !detected.media.audio.is_empty() {
                 report.push_str(&format!("  Audio: {}\n", detected.media.audio.len()));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
 
         // Structured Data

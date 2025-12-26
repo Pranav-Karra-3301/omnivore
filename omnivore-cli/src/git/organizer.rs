@@ -76,10 +76,7 @@ impl CodeOrganizer {
 
         for file in &self.files {
             let category = self.determine_category(&file.relative_path);
-            categories
-                .entry(category)
-                .or_insert_with(Vec::new)
-                .push(file);
+            categories.entry(category).or_default().push(file);
         }
 
         for files in categories.values_mut() {
@@ -297,11 +294,11 @@ Total Files:  {}
             for file in &section.files {
                 output.push_str(&format!("   • {}\n", file.relative_path.display()));
             }
-            output.push_str("\n");
+            output.push('\n');
         }
 
         if include_content {
-            output.push_str("\n");
+            output.push('\n');
             output.push_str("================================================================================\n");
             output.push_str("                              SOURCE CODE\n");
             output.push_str("================================================================================\n\n");
@@ -311,26 +308,26 @@ Total Files:  {}
                     continue;
                 }
 
-                output.push_str(&format!(
+                output.push_str(
                     "\n╔══════════════════════════════════════════════════════════════════════════════╗\n"
-                ));
+                );
                 output.push_str(&format!(
                     "║ {} - {} file(s)\n",
                     section.name.to_uppercase(),
                     section.files.len()
                 ));
-                output.push_str(&format!(
+                output.push_str(
                     "╚══════════════════════════════════════════════════════════════════════════════╝\n\n"
-                ));
+                );
 
                 for file in &section.files {
-                    output.push_str(&format!(
+                    output.push_str(
                         "┌─────────────────────────────────────────────────────────────────────────────┐\n"
-                    ));
+                    );
                     output.push_str(&format!("│ File: {}\n", file.relative_path.display()));
-                    output.push_str(&format!(
+                    output.push_str(
                         "└─────────────────────────────────────────────────────────────────────────────┘\n\n"
-                    ));
+                    );
 
                     if let Ok(content) = std::fs::read_to_string(&file.path) {
                         let lines: Vec<&str> = content.lines().collect();
@@ -340,7 +337,7 @@ Total Files:  {}
                     } else {
                         output.push_str("[Unable to read file content]\n");
                     }
-                    output.push_str("\n");
+                    output.push('\n');
                 }
             }
         }

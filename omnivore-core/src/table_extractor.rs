@@ -58,6 +58,12 @@ pub struct TableExtractor {
     extract_footnotes: bool,
 }
 
+impl Default for TableExtractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TableExtractor {
     pub fn new() -> Self {
         Self {
@@ -259,18 +265,18 @@ impl TableExtractor {
                     let text = self.clean_text(&element.text().collect::<String>());
 
                     // Check if it looks like a footnote (starts with *, †, ‡, §, ¶, #, or number)
-                    if text.starts_with('*')
+                    if (text.starts_with('*')
                         || text.starts_with('†')
                         || text.starts_with('‡')
                         || text.starts_with('§')
                         || text.starts_with('¶')
                         || text.starts_with('#')
-                        || text.chars().next().is_some_and(|c| c.is_ascii_digit())
+                        || text.chars().next().is_some_and(|c| c.is_ascii_digit()))
+                        && !text.is_empty()
+                        && text.len() > 5
                     {
-                        if !text.is_empty() && text.len() > 5 {
-                            // Minimum footnote length
-                            footnotes.push(text);
-                        }
+                        // Minimum footnote length
+                        footnotes.push(text);
                     }
                 }
             }
@@ -287,7 +293,9 @@ impl TableExtractor {
                     if let Some(colspan) = cell.value().attr("colspan") {
                         if colspan.parse::<usize>().unwrap_or(1) > 3 {
                             let text = self.clean_text(&cell.text().collect::<String>());
-                            if text.len() > 10 && !self.looks_like_header(std::slice::from_ref(&text)) {
+                            if text.len() > 10
+                                && !self.looks_like_header(std::slice::from_ref(&text))
+                            {
                                 footnotes.push(text);
                             }
                         }
@@ -333,9 +341,7 @@ impl TableExtractor {
         // If most cells are short and capitalized, probably headers
         let short_caps = row
             .iter()
-            .filter(|cell| {
-                cell.len() < 20 && cell.chars().next().is_some_and(|c| c.is_uppercase())
-            })
+            .filter(|cell| cell.len() < 20 && cell.chars().next().is_some_and(|c| c.is_uppercase()))
             .count();
 
         short_caps > row.len() / 2

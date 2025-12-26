@@ -1,6 +1,5 @@
 use anyhow::Result;
 use std::fs;
-use std::path::Path;
 use tempfile::TempDir;
 
 #[test]

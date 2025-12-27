@@ -114,7 +114,7 @@ impl Crawler {
                             Err(e) => {
                                 let error_msg = format!("Failed to crawl {}: {}", url, e);
                                 tracing::error!("{}", error_msg);
-                                
+
                                 // Write to error log file
                                 let error_entry = format!(
                                     "[{}] {}\n",
@@ -130,7 +130,7 @@ impl Crawler {
                                     use tokio::io::AsyncWriteExt;
                                     let _ = file.write_all(error_entry.as_bytes()).await;
                                 }
-                                
+
                                 let mut stats = stats.write().await;
                                 stats.failed += 1;
                                 stats.in_progress -= 1;

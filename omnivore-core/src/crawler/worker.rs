@@ -1,5 +1,5 @@
-use crate::{CrawlConfig, CrawlResult, Error, Result};
 use crate::extractor::ContentExtractor;
+use crate::{CrawlConfig, CrawlResult, Error, Result};
 use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
@@ -65,13 +65,10 @@ impl Worker {
                     if response.url() != url {
                         let redirect_msg = format!("Redirected: {} -> {}", url, response.url());
                         tracing::info!("{}", redirect_msg);
-                        
+
                         // Write to warnings log
-                        let warning_entry = format!(
-                            "[{}] {}\n",
-                            chrono::Utc::now().to_rfc3339(),
-                            redirect_msg
-                        );
+                        let warning_entry =
+                            format!("[{}] {}\n", chrono::Utc::now().to_rfc3339(), redirect_msg);
                         if let Ok(mut file) = tokio::fs::OpenOptions::new()
                             .create(true)
                             .append(true)

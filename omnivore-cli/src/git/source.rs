@@ -1,16 +1,16 @@
 use anyhow::{anyhow, Context, Result};
+use colored::*;
 use git2::{build::RepoBuilder, Cred, FetchOptions, RemoteCallbacks};
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 use url::Url;
-use colored::*;
-use std::io::{self, Write};
 
 #[derive(Debug, Clone)]
 pub enum SourceType {
     Remote(String),
     Local(PathBuf),
-    LocalNonGit(PathBuf),  // New variant for non-git directories
+    LocalNonGit(PathBuf), // New variant for non-git directories
 }
 
 impl SourceType {
@@ -29,7 +29,7 @@ impl SourceType {
             } else {
                 std::env::current_dir()?.join(path)
             };
-            
+
             if resolved_path.is_dir() {
                 let git_dir = resolved_path.join(".git");
                 if !git_dir.exists() {
@@ -61,8 +61,7 @@ impl SourceType {
         );
         print!(
             "{}",
-            "Do you want to continue and analyze this directory anyway? [y/N]: "
-                .bright_white()
+            "Do you want to continue and analyze this directory anyway? [y/N]: ".bright_white()
         );
         io::stdout().flush()?;
 
@@ -106,7 +105,7 @@ impl SourceAcquisition {
         let url_str = url.to_string();
         let repo_path_clone = repo_path.clone();
         let depth = self.depth;
-        
+
         let clone_result = tokio::task::spawn_blocking(move || {
             let mut callbacks = RemoteCallbacks::new();
             callbacks.credentials(|_url, username_from_url, _allowed_types| {
@@ -120,7 +119,7 @@ impl SourceAcquisition {
                             None,
                         );
                     }
-                    
+
                     let ssh_key = PathBuf::from(&home).join(".ssh/id_ed25519");
                     if ssh_key.exists() {
                         return Cred::ssh_key(
@@ -131,13 +130,12 @@ impl SourceAcquisition {
                         );
                     }
                 }
-                
+
                 Cred::default()
             });
 
-            callbacks.certificate_check(|_cert, _host| {
-                Ok(git2::CertificateCheckStatus::CertificateOk)
-            });
+            callbacks
+                .certificate_check(|_cert, _host| Ok(git2::CertificateCheckStatus::CertificateOk));
 
             let mut fetch_options = FetchOptions::new();
             fetch_options.remote_callbacks(callbacks);
@@ -173,10 +171,7 @@ impl SourceAcquisition {
     pub async fn cleanup(&mut self) -> Result<()> {
         if self.keep_temp {
             if let Some(temp_dir) = &self.temp_dir {
-                println!(
-                    "Temporary clone kept at: {}",
-                    temp_dir.path().display()
-                );
+                println!("Temporary clone kept at: {}", temp_dir.path().display());
                 std::mem::forget(temp_dir.path().to_path_buf());
             }
         }

@@ -750,7 +750,7 @@ pub async fn handle_config(key: Option<String>, value: Option<String>) -> Result
 
             match k.as_str() {
                 "openai_api_key" | "api_key" => match config.ai.openai_api_key {
-                    Some(key) if key.chars().count() > 8 => {
+                    Some(key) if key.chars().count() > 16 => {
                         let prefix: String = key.chars().take(4).collect();
                         let suffix: String = key
                             .chars()

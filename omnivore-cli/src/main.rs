@@ -448,6 +448,25 @@ async fn crawl_command(
 
     let start_url = Url::parse(&url)?;
 
+    // Validate incompatible flag combinations early
+    // These flags require writing files to disk, which is incompatible with --stdout
+    if stdout {
+        if organize {
+            return Err(anyhow::anyhow!(
+                "Error: --stdout cannot be used with --organize. \
+                The --organize flag requires writing files to disk (creates a folder structure). \
+                Remove --stdout to use --organize, or remove --organize to use --stdout for piped output."
+            ));
+        }
+        if zip {
+            return Err(anyhow::anyhow!(
+                "Error: --stdout cannot be used with --zip. \
+                The --zip flag requires writing files to disk (creates a ZIP archive). \
+                Remove --stdout to use --zip, or remove --zip to use --stdout for piped output."
+            ));
+        }
+    }
+
     if !quiet {
         println!("Starting crawl from: {}", start_url.to_string().green());
         println!("Configuration:");
@@ -826,6 +845,14 @@ async fn crawl_command(
 
     // Handle organized output
     if organize {
+        // Defensive check: --stdout is incompatible with --organize
+        if stdout {
+            return Err(anyhow::anyhow!(
+                "Error: --stdout cannot be used with --organize. \
+                The --organize flag requires writing files to disk. \
+                This check should have been caught earlier - please report this as a bug."
+            ));
+        }
         // Create organized folder structure
         let domain = start_url.domain().unwrap_or("unknown");
         let sanitized_domain = domain.replace(['.', '/'], "_");
@@ -1064,6 +1091,14 @@ async fn crawl_command(
 
     // Compress to ZIP if requested (for non-organized output)
     if zip && !organize {
+        // Defensive check: --stdout is incompatible with --zip
+        if stdout {
+            return Err(anyhow::anyhow!(
+                "Error: --stdout cannot be used with --zip. \
+                The --zip flag requires writing files to disk. \
+                This check should have been caught earlier - please report this as a bug."
+            ));
+        }
         let zip_path = PathBuf::from(format!("{}.zip", output_path.display()));
         let zip_file = File::create(&zip_path)?;
         let mut zip_writer = zip::ZipWriter::new(zip_file);

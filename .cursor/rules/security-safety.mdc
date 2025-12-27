@@ -1,0 +1,124 @@
+---
+description: "Security and safety requirements for code generation"
+alwaysApply: true
+---
+
+# Security & Safety Rules
+
+## CRITICAL: Never Generate Code That...
+
+### 1. Introduces Injection Vulnerabilities
+
+```rust
+// BAD: SQL injection
+let query = format!("SELECT * FROM pages WHERE url = '{}'", user_input);
+
+// GOOD: Parameterized query
+sqlx::query("SELECT * FROM pages WHERE url = ?")
+    .bind(&user_input)
+    .fetch_one(&pool)
+    .await?;
+```
+
+```rust
+// BAD: Command injection
+Command::new("sh").arg("-c").arg(&user_input).spawn();
+
+// GOOD: Avoid shell, use direct execution with validated args
+Command::new("git").args(["clone", &validated_url]).spawn();
+```
+
+### 2. Bypasses Crawling Ethics
+
+```rust
+// NEVER bypass robots.txt
+config.respect_robots_txt = false;  // FORBIDDEN
+
+// NEVER disable rate limiting
+rate_limiter.disable();  // FORBIDDEN
+
+// NEVER spoof user agents maliciously
+headers.insert("User-Agent", "Googlebot");  // FORBIDDEN
+```
+
+### 3. Exposes Secrets
+
+```rust
+// NEVER hardcode credentials
+let api_key = "sk-abc123";  // FORBIDDEN
+
+// ALWAYS use environment variables
+let api_key = std::env::var("API_KEY")
+    .context("API_KEY environment variable not set")?;
+```
+
+### 4. Uses Unsafe Code Without Justification
+
+```rust
+// NEVER use unsafe without documentation explaining:
+// 1. Why it's necessary
+// 2. What invariants must be maintained
+// 3. How safety is ensured
+
+// If unsafe is truly needed:
+/// # Safety
+/// This function is safe because:
+/// - The pointer is guaranteed valid by [reason]
+/// - The memory is properly aligned by [mechanism]
+unsafe fn documented_unsafe_fn() { ... }
+```
+
+## Input Validation
+
+Always validate external inputs:
+
+```rust
+fn validate_url(input: &str) -> Result<Url, ValidationError> {
+    let url = Url::parse(input)?;
+
+    // Only allow http/https
+    match url.scheme() {
+        "http" | "https" => Ok(url),
+        scheme => Err(ValidationError::UnsupportedScheme(scheme.to_string())),
+    }
+}
+
+fn validate_path(input: &str) -> Result<PathBuf, ValidationError> {
+    let path = PathBuf::from(input);
+
+    // Prevent path traversal
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(ValidationError::PathTraversal);
+    }
+
+    Ok(path)
+}
+```
+
+## Resource Limits
+
+Always bound resource usage:
+
+```rust
+// Limit concurrent connections
+let semaphore = Semaphore::new(MAX_CONCURRENT_REQUESTS);
+
+// Limit response size
+let body = response.bytes_stream()
+    .take(MAX_RESPONSE_SIZE)
+    .collect::<Vec<_>>()
+    .await;
+
+// Limit crawl depth
+if current_depth > config.max_depth {
+    return Ok(());
+}
+```
+
+## Secrets That Must Never Be Committed
+
+- `.env` files
+- `*.pem`, `*.key` files
+- API keys or tokens
+- Database credentials
+- Private configuration

@@ -1,0 +1,159 @@
+---
+description: "Web crawler specific patterns and best practices"
+alwaysApply: false
+globs: ["**/crawler/**", "**/parser/**"]
+---
+
+# Crawler Development Patterns
+
+## URL Handling
+
+```rust
+use url::Url;
+
+/// Normalize a URL for consistent storage and deduplication.
+pub fn normalize_url(url: &Url) -> Url {
+    let mut normalized = url.clone();
+
+    // Lowercase host
+    if let Some(host) = normalized.host_str() {
+        // URL crate handles this automatically
+    }
+
+    // Remove default ports
+    if normalized.port() == Some(80) && normalized.scheme() == "http" {
+        normalized.set_port(None).ok();
+    }
+    if normalized.port() == Some(443) && normalized.scheme() == "https" {
+        normalized.set_port(None).ok();
+    }
+
+    // Sort query parameters for consistency
+    // Remove fragments (they're client-side)
+    normalized.set_fragment(None);
+
+    normalized
+}
+```
+
+## Politeness / Rate Limiting
+
+Always implement rate limiting:
+
+```rust
+use governor::{Quota, RateLimiter};
+use std::num::NonZeroU32;
+
+pub struct PolitenessEngine {
+    global_limiter: RateLimiter<...>,
+    per_domain: DashMap<String, RateLimiter<...>>,
+}
+
+impl PolitenessEngine {
+    pub async fn wait_for_permission(&self, domain: &str) {
+        // Global rate limit
+        self.global_limiter.until_ready().await;
+
+        // Per-domain rate limit
+        let domain_limiter = self.per_domain
+            .entry(domain.to_string())
+            .or_insert_with(|| create_domain_limiter());
+
+        domain_limiter.until_ready().await;
+    }
+}
+```
+
+## robots.txt Compliance
+
+Always check robots.txt:
+
+```rust
+use robotstxt::Robots;
+
+pub struct RobotsChecker {
+    cache: DashMap<String, Robots>,
+}
+
+impl RobotsChecker {
+    pub async fn is_allowed(&self, url: &Url) -> bool {
+        let host = match url.host_str() {
+            Some(h) => h,
+            None => return false,
+        };
+
+        let robots = self.get_or_fetch_robots(host).await;
+        robots.is_allowed(&self.user_agent, url.path())
+    }
+}
+```
+
+## Content Extraction
+
+Use CSS selectors with the scraper crate:
+
+```rust
+use scraper::{Html, Selector};
+
+pub fn extract_links(html: &str, base_url: &Url) -> Vec<Url> {
+    let document = Html::parse_document(html);
+    let selector = Selector::parse("a[href]").unwrap();
+
+    document.select(&selector)
+        .filter_map(|el| el.value().attr("href"))
+        .filter_map(|href| base_url.join(href).ok())
+        .filter(|url| url.scheme() == "http" || url.scheme() == "https")
+        .collect()
+}
+
+pub fn extract_text(html: &str, selector: &str) -> Option<String> {
+    let document = Html::parse_document(html);
+    let sel = Selector::parse(selector).ok()?;
+
+    document.select(&sel)
+        .next()
+        .map(|el| el.text().collect::<String>().trim().to_string())
+}
+```
+
+## Retry Logic
+
+Implement exponential backoff:
+
+```rust
+use std::time::Duration;
+use tokio::time::sleep;
+
+pub async fn fetch_with_retry<F, T, E>(
+    mut operation: F,
+    max_retries: u32,
+) -> Result<T, E>
+where
+    F: FnMut() -> futures::future::BoxFuture<'static, Result<T, E>>,
+{
+    let mut attempt = 0;
+    loop {
+        match operation().await {
+            Ok(result) => return Ok(result),
+            Err(e) if attempt < max_retries => {
+                attempt += 1;
+                let delay = Duration::from_millis(100 * 2u64.pow(attempt));
+                sleep(delay).await;
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+```
+
+## User-Agent Best Practices
+
+```rust
+const USER_AGENT: &str = concat!(
+    "Omnivore/", env!("CARGO_PKG_VERSION"),
+    " (+https://github.com/Pranav-Karra-3301/omnivore)"
+);
+
+// Include contact info so site owners can reach out
+// Never impersonate browsers or other crawlers
+```

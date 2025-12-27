@@ -1,0 +1,61 @@
+---
+description: "Core Omnivore project context and guidelines"
+alwaysApply: true
+---
+
+# Omnivore Project Guidelines
+
+## Project Identity
+
+Omnivore is a high-performance Rust web crawler and knowledge graph builder.
+
+- **Language**: Rust (Edition 2021, requires 1.88+)
+- **License**: MIT OR Apache-2.0
+- **Status**: Experimental/vibecoded personal project
+
+## Workspace Structure
+
+```
+omnivore/
+├── omnivore-core/   # Core library (crawler, parser, storage)
+├── omnivore-cli/    # CLI application
+├── docs/            # MkDocs documentation
+└── configs/         # Configuration examples
+```
+
+## Key Technologies
+
+| Crate | Purpose |
+|-------|---------|
+| tokio | Async runtime |
+| reqwest | HTTP client |
+| scraper | HTML parsing |
+| petgraph | Graph operations |
+| clap | CLI framework |
+| serde | Serialization |
+| tracing | Logging |
+
+## Philosophy
+
+1. **Safety First**: Never bypass security controls or introduce vulnerabilities
+2. **Ethical Crawling**: Always respect robots.txt and rate limits
+3. **Proper Error Handling**: Use Result types, never unwrap in production
+4. **Clear Documentation**: Document all public APIs with examples
+5. **Test Coverage**: Include tests for new functionality
+
+## Commands Reference
+
+```bash
+make build      # Release build
+make test       # Run all tests
+make ci         # Full CI checks (fmt, clippy, test, audit)
+make docs       # Generate documentation
+```
+
+## Before Suggesting Code
+
+1. Check existing patterns in the codebase
+2. Use established dependencies (don't add new ones without reason)
+3. Follow Rust idioms and clippy recommendations
+4. Include error handling with proper types
+5. Add documentation for public APIs

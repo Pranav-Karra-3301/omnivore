@@ -1,0 +1,116 @@
+---
+description: "Rust coding standards for Omnivore"
+alwaysApply: true
+globs: ["**/*.rs"]
+---
+
+# Rust Coding Standards
+
+## Error Handling
+
+### In Library Code (omnivore-core)
+
+Use `thiserror` for typed errors:
+
+```rust
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum CrawlError {
+    #[error("Network error: {0}")]
+    Network(#[from] reqwest::Error),
+
+    #[error("Rate limited for domain: {domain}")]
+    RateLimited { domain: String },
+}
+```
+
+### In Application Code (omnivore-cli)
+
+Use `anyhow` for error context:
+
+```rust
+use anyhow::{Context, Result};
+
+fn load_config() -> Result<Config> {
+    let path = find_config_path()?;
+    let content = std::fs::read_to_string(&path)
+        .context("Failed to read config file")?;
+    toml::from_str(&content)
+        .context("Failed to parse config")
+}
+```
+
+## Async Patterns
+
+```rust
+// Use tokio for async
+#[tokio::main]
+async fn main() -> Result<()> {
+    // ...
+}
+
+// Limit concurrency with semaphores
+use tokio::sync::Semaphore;
+let semaphore = Arc::new(Semaphore::new(10));
+let _permit = semaphore.acquire().await?;
+```
+
+## NEVER DO
+
+```rust
+// NEVER: unwrap in production
+let x = result.unwrap();  // BAD
+
+// NEVER: ignore errors
+let _ = fallible_operation();  // BAD
+
+// NEVER: blocking in async
+std::fs::read_to_string(path);  // BAD in async context
+
+// NEVER: unsafe without documentation
+unsafe { /* ... */ }  // BAD without justification
+```
+
+## ALWAYS DO
+
+```rust
+// ALWAYS: propagate errors
+let x = result?;
+
+// ALWAYS: use async I/O in async contexts
+tokio::fs::read_to_string(path).await?;
+
+// ALWAYS: document public APIs
+/// Brief description.
+///
+/// # Errors
+/// Returns `Error` when...
+pub fn public_function() -> Result<T> { ... }
+```
+
+## Import Organization
+
+```rust
+// Standard library
+use std::collections::HashMap;
+use std::sync::Arc;
+
+// External crates
+use anyhow::{Context, Result};
+use serde::{Deserialize, Serialize};
+use tokio::sync::Semaphore;
+
+// Internal modules
+use crate::config::Config;
+use crate::error::CrawlError;
+```
+
+## Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Types | PascalCase | `CrawlConfig` |
+| Functions | snake_case | `fetch_page` |
+| Constants | SCREAMING_SNAKE | `MAX_RETRIES` |
+| Modules | snake_case | `url_frontier` |

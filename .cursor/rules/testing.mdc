@@ -1,0 +1,131 @@
+---
+description: "Testing patterns and requirements"
+alwaysApply: false
+globs: ["**/tests/**", "**/*_test.rs", "**/test_*.rs"]
+---
+
+# Testing Guidelines
+
+## Test Structure
+
+### Unit Tests
+
+Place in the same file as the code:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_function_name_describes_behavior() {
+        // Arrange
+        let input = create_test_input();
+
+        // Act
+        let result = function_under_test(input);
+
+        // Assert
+        assert_eq!(result, expected_value);
+    }
+}
+```
+
+### Async Tests
+
+```rust
+#[tokio::test]
+async fn test_async_operation() {
+    let result = async_function().await;
+    assert!(result.is_ok());
+}
+```
+
+### Integration Tests
+
+Place in `/tests/` directory:
+
+```rust
+// tests/crawler_integration.rs
+use omnivore_core::Crawler;
+
+#[tokio::test]
+async fn test_full_crawl_workflow() {
+    // Setup
+    let mut server = mockito::Server::new_async().await;
+    let mock = server.mock("GET", "/")
+        .with_body("<html><body>Test</body></html>")
+        .create();
+
+    // Execute
+    let crawler = Crawler::new(Default::default());
+    let result = crawler.crawl(&server.url()).await;
+
+    // Verify
+    mock.assert();
+    assert!(result.is_ok());
+}
+```
+
+## Mocking HTTP
+
+Use `mockito` for HTTP mocking:
+
+```rust
+use mockito::Server;
+
+#[tokio::test]
+async fn test_with_mock_http() {
+    let mut server = Server::new_async().await;
+
+    let mock = server.mock("GET", "/api/data")
+        .with_status(200)
+        .with_header("content-type", "application/json")
+        .with_body(r#"{"status": "ok"}"#)
+        .create();
+
+    let client = MyClient::new(&server.url());
+    let response = client.fetch_data().await.unwrap();
+
+    mock.assert();
+    assert_eq!(response.status, "ok");
+}
+```
+
+## Property-Based Testing
+
+Use `proptest` for property testing:
+
+```rust
+use proptest::prelude::*;
+
+proptest! {
+    #[test]
+    fn test_url_normalization_is_idempotent(url in "https?://[a-z]+\\.[a-z]+/[a-z]*") {
+        if let Ok(normalized) = normalize_url(&url) {
+            let double_normalized = normalize_url(&normalized).unwrap();
+            prop_assert_eq!(normalized, double_normalized);
+        }
+    }
+}
+```
+
+## Test Naming Convention
+
+```
+test_<unit>_<scenario>_<expected_behavior>
+```
+
+Examples:
+- `test_url_parser_with_valid_https_returns_url`
+- `test_rate_limiter_when_exceeded_blocks_request`
+- `test_crawler_with_robots_disallow_skips_url`
+
+## Required Checks Before Merge
+
+```bash
+cargo test --workspace           # All tests pass
+cargo test --doc                 # Doc tests pass
+cargo clippy -- -D warnings      # No warnings
+cargo fmt --check                # Properly formatted
+```

@@ -41,7 +41,7 @@ impl OutputWriter {
     pub fn set_output_path(&mut self, path: PathBuf) {
         self.output_path = Some(path);
     }
-    
+
     pub fn set_stdout_mode(&mut self) {
         self.force_stdout = true;
         self.output_path = None;
@@ -69,8 +69,8 @@ impl OutputWriter {
             }
         }
 
-        let json = serde_json::to_string_pretty(&file_contents)
-            .context("Failed to serialize to JSON")?;
+        let json =
+            serde_json::to_string_pretty(&file_contents).context("Failed to serialize to JSON")?;
 
         if self.force_stdout || self.output_path.is_none() {
             print!("{json}");
@@ -119,9 +119,7 @@ impl OutputWriter {
 
         if output_dir.exists() {
             if !output_dir.is_dir() {
-                return Err(anyhow::anyhow!(
-                    "Output path exists but is not a directory"
-                ));
+                return Err(anyhow::anyhow!("Output path exists but is not a directory"));
             }
         } else {
             tokio::fs::create_dir_all(&output_dir)
@@ -132,7 +130,7 @@ impl OutputWriter {
         let mut count = 0;
         for file in files {
             let dest_path = output_dir.join(&file.relative_path);
-            
+
             if let Some(parent) = dest_path.parent() {
                 tokio::fs::create_dir_all(parent)
                     .await
@@ -157,16 +155,16 @@ impl OutputWriter {
 
 fn read_file_content(path: &Path) -> Result<String> {
     let bytes = fs::read(path).context("Failed to read file")?;
-    
+
     let (cow, _, had_errors) = UTF_8.decode(&bytes);
-    
+
     if had_errors {
         return Err(anyhow::anyhow!(
             "File contains invalid UTF-8: {}",
             path.display()
         ));
     }
-    
+
     Ok(cow.into_owned())
 }
 

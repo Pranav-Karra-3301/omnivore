@@ -117,7 +117,9 @@ mod tests {
         let text = "Visit https://example.com for details.";
         let entities = EntityRecognizer::recognize(text).unwrap();
 
-        assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Url)));
+        assert!(entities
+            .iter()
+            .any(|e| matches!(e.entity_type, EntityType::Url)));
     }
 
     #[test]

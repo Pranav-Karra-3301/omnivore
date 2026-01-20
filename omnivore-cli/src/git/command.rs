@@ -5,7 +5,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::path::PathBuf;
 
 use super::{
-    detector::{CodebaseDetector, get_default_include_patterns, get_smart_exclude_patterns},
+    detector::{get_default_include_patterns, get_smart_exclude_patterns, CodebaseDetector},
     filter::FileFilter,
     organizer::CodeOrganizer,
     output::{OutputFormat, OutputWriter},
@@ -41,11 +41,7 @@ pub struct GitArgs {
     #[arg(long, help = "Ignore .gitignore files")]
     pub no_gitignore: bool,
 
-    #[arg(
-        long,
-        value_name = "PATH",
-        help = "Output filtered files to directory"
-    )]
+    #[arg(long, value_name = "PATH", help = "Output filtered files to directory")]
     pub output: Option<PathBuf>,
 
     #[arg(long, help = "Output as JSON")]
@@ -54,10 +50,17 @@ pub struct GitArgs {
     #[arg(long, help = "Output to stdout instead of file")]
     pub stdout: bool,
 
-    #[arg(long, help = "Keep temporary clone after completion (for remote repos)")]
+    #[arg(
+        long,
+        help = "Keep temporary clone after completion (for remote repos)"
+    )]
     pub keep: bool,
 
-    #[arg(long, default_value = "1", help = "Clone depth for remote repositories")]
+    #[arg(
+        long,
+        default_value = "1",
+        help = "Clone depth for remote repositories"
+    )]
     pub depth: u32,
 
     #[arg(long, help = "Include binary files in output")]
@@ -111,32 +114,35 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     progress.set_message("Detecting codebase type...");
     let detector = CodebaseDetector::new(repo_path.clone());
     let codebase_info = detector.detect()?;
-    
+
     if args.verbose {
         println!("Detected: {}", codebase_info.description);
     }
 
     progress.set_message("Setting up filters...");
     let mut filter = FileFilter::new(repo_path.clone());
-    
+
     if args.no_gitignore {
         filter.ignore_gitignore();
     }
-    
+
     let include_patterns = if let Some(only_patterns) = &args.only {
         only_patterns.iter().map(|p| normalize_pattern(p)).collect()
     } else if let Some(include_patterns) = &args.include {
-        include_patterns.iter().map(|p| normalize_pattern(p)).collect()
+        include_patterns
+            .iter()
+            .map(|p| normalize_pattern(p))
+            .collect()
     } else if should_use_smart_defaults(&args) {
         get_default_include_patterns(&codebase_info)
     } else {
         Vec::new()
     };
-    
+
     if !include_patterns.is_empty() {
         filter.set_include_patterns(include_patterns)?;
     }
-    
+
     let exclude_patterns = if let Some(exclude) = &args.exclude {
         exclude.iter().map(|p| normalize_pattern(p)).collect()
     } else if should_use_smart_defaults(&args) {
@@ -144,23 +150,21 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     } else {
         Vec::new()
     };
-    
+
     if !exclude_patterns.is_empty() {
         filter.set_exclude_patterns(exclude_patterns)?;
     }
-    
+
     if !args.allow_binary {
         filter.exclude_binary_files();
     }
-    
+
     // Set a default max file size of 10MB if not specified
     let max_size = args.max_file_size.unwrap_or(10 * 1024 * 1024); // 10MB default
     filter.set_max_file_size(max_size);
 
     progress.set_message("Filtering files...");
-    let filtered_files = filter
-        .filter_files()
-        .context("Failed to filter files")?;
+    let filtered_files = filter.filter_files().context("Failed to filter files")?;
 
     if filtered_files.is_empty() {
         progress.finish_with_message("No files matched the filter criteria");
@@ -171,45 +175,47 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     progress.set_message(format!("Processing {} files...", filtered_files.len()));
 
     let output_format = determine_output_format(&args);
-    
+
     let output_path = if !args.stdout && args.output.is_none() {
         let repo_name = extract_repo_name(&args.source);
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let extension = if args.json { "json" } else { "txt" };
-        Some(PathBuf::from(format!("{repo_name}_{timestamp}.{extension}")))
+        Some(PathBuf::from(format!(
+            "{repo_name}_{timestamp}.{extension}"
+        )))
     } else {
         args.output.clone()
     };
-    
+
     let files_written = if should_use_organized_output(&args, &output_path) {
         let organizer = CodeOrganizer::new(codebase_info, filtered_files);
         let organized = organizer.organize();
-        
+
         let output_content = if args.json {
             organized.to_json()?
         } else {
             organized.to_formatted_text(true, &repo_path)?
         };
-        
+
         if args.stdout {
             print!("{output_content}");
             std::io::Write::flush(&mut std::io::stdout())?;
         } else if let Some(ref path) = output_path {
             tokio::fs::write(path, output_content).await?;
         }
-        
+
         organized.metadata.total_files
     } else {
         let mut writer = OutputWriter::new(output_format, repo_path.clone());
-        
+
         if let Some(ref path) = output_path {
             writer.set_output_path(path.clone());
         }
-        
+
         if args.stdout {
             writer.set_stdout_mode();
         }
-        
+
         writer
             .write_files(filtered_files)
             .await
@@ -217,7 +223,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     };
 
     progress.finish_and_clear();
-    
+
     println!(
         "{}",
         format!("✅ Successfully processed {files_written} files")
@@ -227,10 +233,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
 
     if let Some(path) = output_path {
         if !args.stdout {
-            println!(
-                "Output written to: {}",
-                path.display().to_string().cyan()
-            );
+            println!("Output written to: {}", path.display().to_string().cyan());
         }
     }
 
@@ -268,10 +271,18 @@ fn should_use_organized_output(args: &GitArgs, output_path: &Option<PathBuf>) ->
 
 fn normalize_pattern(pattern: &str) -> String {
     // If pattern looks like a file extension without wildcards, convert it to a glob pattern
-    if !pattern.contains('*') && !pattern.contains('/') && !pattern.contains('?') && !pattern.contains('[') {
+    if !pattern.contains('*')
+        && !pattern.contains('/')
+        && !pattern.contains('?')
+        && !pattern.contains('[')
+    {
         // Handle patterns like "md", ".md", "rs", ".rs" etc.
         let cleaned = pattern.trim_start_matches('.');
-        if !cleaned.is_empty() && cleaned.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
+        if !cleaned.is_empty()
+            && cleaned
+                .chars()
+                .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+        {
             return format!("**/*.{cleaned}");
         }
     }
@@ -280,10 +291,8 @@ fn normalize_pattern(pattern: &str) -> String {
 
 fn extract_repo_name(source: &str) -> String {
     // Extract repository name from URL or path
-    let cleaned = source
-        .trim_end_matches('/')
-        .trim_end_matches(".git");
-    
+    let cleaned = source.trim_end_matches('/').trim_end_matches(".git");
+
     if let Some(pos) = cleaned.rfind('/') {
         cleaned[pos + 1..].to_string()
     } else {

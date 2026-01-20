@@ -323,11 +323,21 @@ fn test_mixed_entities() {
     let entities = EntityRecognizer::recognize(text).unwrap();
 
     // Should find multiple entity types
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Email)));
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Phone)));
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Url)));
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Money)));
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Date)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Email)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Phone)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Url)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Money)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Date)));
 }
 
 // ============================================================================
@@ -436,8 +446,8 @@ fn test_complex_text_relations() {
 
 #[test]
 fn test_graph_operations() {
-    use omnivore_core::graph::{Edge, KnowledgeGraph, Node};
     use omnivore_core::graph::query::GraphQuery;
+    use omnivore_core::graph::{Edge, KnowledgeGraph, Node};
     use std::collections::HashMap;
 
     let mut graph = KnowledgeGraph::new();
@@ -674,7 +684,8 @@ fn test_news_article_style() {
     assert!(cleaned.description.is_some());
 
     // Test entity extraction on news article text
-    let article_text = "By John Smith | January 15, 2024. Microsoft acquired TechCorp for $500 million.";
+    let article_text =
+        "By John Smith | January 15, 2024. Microsoft acquired TechCorp for $500 million.";
     let entities = EntityRecognizer::recognize(article_text).unwrap();
 
     // Should find date
@@ -807,7 +818,9 @@ fn test_special_characters() {
     // Test entity extraction on the raw text with special characters
     let raw_text = "Special chars: & < > \" Unicode: 你好 🚀 émojis Email: test+tag@example.com";
     let entities = EntityRecognizer::recognize(raw_text).unwrap();
-    assert!(entities.iter().any(|e| matches!(e.entity_type, EntityType::Email)));
+    assert!(entities
+        .iter()
+        .any(|e| matches!(e.entity_type, EntityType::Email)));
 }
 
 #[test]

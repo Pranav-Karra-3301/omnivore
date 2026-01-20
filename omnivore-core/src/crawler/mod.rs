@@ -64,20 +64,12 @@ impl ResultsBuffer {
                 file.write_all(line.as_bytes())
                     .await
                     .map_err(std::io::Error::other)?;
-                file.write_all(b"\n")
-                    .await
-                    .map_err(std::io::Error::other)?;
+                file.write_all(b"\n").await.map_err(std::io::Error::other)?;
             }
 
-            file.flush()
-                .await
-                .map_err(std::io::Error::other)?;
+            file.flush().await.map_err(std::io::Error::other)?;
 
-            tracing::info!(
-                "Flushed {} results to {}",
-                self.results.len(),
-                path
-            );
+            tracing::info!("Flushed {} results to {}", self.results.len(), path);
             self.flushed_count += self.results.len();
             self.results.clear();
         } else if self.max_in_memory > 0 {

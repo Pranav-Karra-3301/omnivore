@@ -27,12 +27,7 @@ fn test_basic_git_functionality() -> Result<()> {
 #[test]
 fn test_gitignore_patterns() -> Result<()> {
     // Test gitignore pattern parsing
-    let patterns = vec![
-        "*.log",
-        "target/",
-        "node_modules/",
-        ".DS_Store",
-    ];
+    let patterns = vec!["*.log", "target/", "node_modules/", ".DS_Store"];
 
     for pattern in patterns {
         assert!(!pattern.is_empty());
@@ -46,10 +41,10 @@ fn test_file_path_manipulation() -> Result<()> {
     let temp_dir = TempDir::new()?;
     let root = temp_dir.path();
     let src_path = root.join("src").join("lib.rs");
-    
+
     // Test path operations
     assert_eq!(src_path.file_name().unwrap(), "lib.rs");
     assert_eq!(src_path.extension().unwrap(), "rs");
-    
+
     Ok(())
 }

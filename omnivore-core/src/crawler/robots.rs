@@ -144,9 +144,9 @@ impl RobotsChecker {
             if line_lower.starts_with("user-agent:") {
                 let agent = line_lower.trim_start_matches("user-agent:").trim();
                 // Match our user agent or wildcard
-                in_matching_section = agent == "*" ||
-                    user_agent_lower.contains(agent) ||
-                    agent.contains(&user_agent_lower);
+                in_matching_section = agent == "*"
+                    || user_agent_lower.contains(agent)
+                    || agent.contains(&user_agent_lower);
             }
             // Check for Crawl-delay directive in matching section
             else if in_matching_section && line_lower.starts_with("crawl-delay:") {

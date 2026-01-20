@@ -166,9 +166,10 @@ impl CodebaseDetector {
         }
 
         if (json.get("dependencies").is_some() || json.get("devDependencies").is_some())
-            && !info.build_tools.contains(&BuildTool::Npm) {
-                info.build_tools.push(BuildTool::Npm);
-            }
+            && !info.build_tools.contains(&BuildTool::Npm)
+        {
+            info.build_tools.push(BuildTool::Npm);
+        }
 
         let deps = json.get("dependencies").and_then(|d| d.as_object());
         let dev_deps = json.get("devDependencies").and_then(|d| d.as_object());
@@ -199,10 +200,18 @@ impl CodebaseDetector {
             info.frameworks.push(Framework::ReactNative);
         }
 
-        if path.parent().and_then(|p| p.join("yarn.lock").exists().then_some(())).is_some() {
+        if path
+            .parent()
+            .and_then(|p| p.join("yarn.lock").exists().then_some(()))
+            .is_some()
+        {
             info.build_tools.push(BuildTool::Yarn);
         }
-        if path.parent().and_then(|p| p.join("pnpm-lock.yaml").exists().then_some(())).is_some() {
+        if path
+            .parent()
+            .and_then(|p| p.join("pnpm-lock.yaml").exists().then_some(()))
+            .is_some()
+        {
             info.build_tools.push(BuildTool::Pnpm);
         }
 
@@ -272,14 +281,14 @@ impl CodebaseDetector {
     fn check_ruby_project(path: &Path, info: &mut CodebaseInfo) -> Result<()> {
         info.languages.push(Language::Ruby);
         info.build_tools.push(BuildTool::Bundler);
-        
+
         // Check for Rails by looking for config/application.rb relative to Gemfile
         if let Some(parent) = path.parent() {
             if parent.join("config").join("application.rb").exists() {
                 info.frameworks.push(Framework::Rails);
             }
         }
-        
+
         Ok(())
     }
 
@@ -384,12 +393,25 @@ impl CodebaseDetector {
         if !info.frameworks.is_empty() {
             if matches!(
                 info.frameworks.first(),
-                Some(Framework::NextJS | Framework::React | Framework::Vue | Framework::Angular | Framework::Svelte)
+                Some(
+                    Framework::NextJS
+                        | Framework::React
+                        | Framework::Vue
+                        | Framework::Angular
+                        | Framework::Svelte
+                )
             ) {
                 info.project_type = ProjectType::WebApplication;
             } else if matches!(
                 info.frameworks.first(),
-                Some(Framework::Express | Framework::FastAPI | Framework::Django | Framework::Flask | Framework::Actix | Framework::Rocket)
+                Some(
+                    Framework::Express
+                        | Framework::FastAPI
+                        | Framework::Django
+                        | Framework::Flask
+                        | Framework::Actix
+                        | Framework::Rocket
+                )
             ) {
                 info.project_type = ProjectType::API;
             } else if matches!(
@@ -408,13 +430,10 @@ impl CodebaseDetector {
             || self.root_path.join("__init__.py").exists()
         {
             info.project_type = ProjectType::Library;
-        } else if self.root_path.join("docs").exists()
-            || self.root_path.join("README.md").exists()
+        } else if self.root_path.join("docs").exists() || self.root_path.join("README.md").exists()
         {
             info.project_type = ProjectType::Documentation;
-        } else if self.root_path.join("packages").exists()
-            || self.root_path.join("apps").exists()
-        {
+        } else if self.root_path.join("packages").exists() || self.root_path.join("apps").exists() {
             info.project_type = ProjectType::Monorepo;
         }
     }
@@ -559,7 +578,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/vendor/**".to_string(),
         "**/.pnp/**".to_string(),
         "**/.yarn/**".to_string(),
-        
         // Build outputs
         "**/target/**".to_string(),
         "**/dist/**".to_string(),
@@ -571,12 +589,10 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/.output/**".to_string(),
         "**/.svelte-kit/**".to_string(),
         "**/public/build/**".to_string(),
-        
         // Version control
         "**/.git/**".to_string(),
         "**/.svn/**".to_string(),
         "**/.hg/**".to_string(),
-        
         // Python specific
         "**/__pycache__/**".to_string(),
         "**/venv/**".to_string(),
@@ -587,7 +603,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/.tox/**".to_string(),
         "**/*.egg-info/**".to_string(),
         "**/pip-wheel-metadata/**".to_string(),
-        
         // Test coverage and reports
         "**/coverage/**".to_string(),
         "**/.coverage/**".to_string(),
@@ -595,7 +610,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/.nyc_output/**".to_string(),
         "**/test-results/**".to_string(),
         "**/.pytest_cache/**".to_string(),
-        
         // IDE and editor files
         "**/.idea/**".to_string(),
         "**/.vscode/**".to_string(),
@@ -605,7 +619,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*~".to_string(),
         "**/.DS_Store".to_string(),
         "**/Thumbs.db".to_string(),
-        
         // Logs and temporary files
         "**/logs/**".to_string(),
         "**/*.log".to_string(),
@@ -614,7 +627,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/.tmp/**".to_string(),
         "**/.temp/**".to_string(),
         "**/.cache/**".to_string(),
-        
         // Minified and compiled files
         "**/*.min.js".to_string(),
         "**/*.min.css".to_string(),
@@ -622,7 +634,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/bundle.js".to_string(),
         "**/chunk.*.js".to_string(),
         "**/*.bundle.js".to_string(),
-        
         // Lock files (usually not needed for code understanding)
         "**/package-lock.json".to_string(),
         "**/yarn.lock".to_string(),
@@ -631,19 +642,16 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/Gemfile.lock".to_string(),
         "**/poetry.lock".to_string(),
         "**/Pipfile.lock".to_string(),
-        
         // Documentation build outputs
         "**/docs/_build/**".to_string(),
         "**/site/**".to_string(),
         "**/_site/**".to_string(),
-        
         // Database files
         "**/*.sqlite".to_string(),
         "**/*.sqlite3".to_string(),
         "**/*.db".to_string(),
         "**/*.mdb".to_string(),
         "**/*.accdb".to_string(),
-        
         // Large binary and archive files
         "**/*.zip".to_string(),
         "**/*.tar".to_string(),
@@ -662,7 +670,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*.dmg".to_string(),
         "**/*.pkg".to_string(),
         "**/*.iso".to_string(),
-        
         // Machine learning model files (often very large)
         "**/*.pt".to_string(),
         "**/*.pth".to_string(),
@@ -678,7 +685,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*.model".to_string(),
         "**/*.ckpt".to_string(),
         "**/*.safetensors".to_string(),
-        
         // Data files (often large and not code)
         "**/*.csv".to_string(),
         "**/*.tsv".to_string(),
@@ -687,7 +693,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*.msgpack".to_string(),
         "**/*.npy".to_string(),
         "**/*.npz".to_string(),
-        
         // Office documents
         "**/*.doc".to_string(),
         "**/*.docx".to_string(),
@@ -699,7 +704,6 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*.odt".to_string(),
         "**/*.ods".to_string(),
         "**/*.odp".to_string(),
-        
         // Media files (usually not needed for code analysis)
         "**/*.jpg".to_string(),
         "**/*.jpeg".to_string(),
@@ -724,14 +728,12 @@ pub fn get_smart_exclude_patterns(info: &CodebaseInfo) -> Vec<String> {
         "**/*.aac".to_string(),
         "**/*.ogg".to_string(),
         "**/*.wma".to_string(),
-        
         // Font files
         "**/*.woff".to_string(),
         "**/*.woff2".to_string(),
         "**/*.ttf".to_string(),
         "**/*.otf".to_string(),
         "**/*.eot".to_string(),
-        
         // Compiled/binary files
         "**/*.exe".to_string(),
         "**/*.dll".to_string(),

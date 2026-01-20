@@ -156,7 +156,8 @@ impl TableExtractor {
         let single_cell_rows = rows
             .iter()
             .filter(|row| {
-                let cell_count = row.select(&patterns::TD).count() + row.select(&patterns::TH).count();
+                let cell_count =
+                    row.select(&patterns::TD).count() + row.select(&patterns::TH).count();
                 cell_count == 1
             })
             .count();
@@ -175,9 +176,7 @@ impl TableExtractor {
         // Check if table contains mostly non-text content (forms, images)
         let text_content = table.text().collect::<String>();
         let text_len = text_content.trim().len();
-        let form_count = table
-            .select(&patterns::FORM)
-            .count();
+        let form_count = table.select(&patterns::FORM).count();
         let img_count = table.select(&patterns::IMG).count();
 
         // If there are many forms/images relative to text, likely layout
@@ -518,9 +517,7 @@ impl TableExtractor {
         // If most cells are short and capitalized, probably headers
         let short_caps = row
             .iter()
-            .filter(|cell| {
-                cell.len() < 20 && cell.chars().next().is_some_and(|c| c.is_uppercase())
-            })
+            .filter(|cell| cell.len() < 20 && cell.chars().next().is_some_and(|c| c.is_uppercase()))
             .count();
 
         short_caps > row.len() / 2

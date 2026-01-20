@@ -17,16 +17,13 @@ pub static TABLE: Lazy<Selector> =
     Lazy::new(|| Selector::parse("table").expect("Invalid selector: table"));
 
 /// Selector for `<tr>` (table row) elements
-pub static TR: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("tr").expect("Invalid selector: tr"));
+pub static TR: Lazy<Selector> = Lazy::new(|| Selector::parse("tr").expect("Invalid selector: tr"));
 
 /// Selector for `<td>` (table data) elements
-pub static TD: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("td").expect("Invalid selector: td"));
+pub static TD: Lazy<Selector> = Lazy::new(|| Selector::parse("td").expect("Invalid selector: td"));
 
 /// Selector for `<th>` (table header) elements
-pub static TH: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("th").expect("Invalid selector: th"));
+pub static TH: Lazy<Selector> = Lazy::new(|| Selector::parse("th").expect("Invalid selector: th"));
 
 /// Selector for `<thead>` elements
 pub static THEAD: Lazy<Selector> =
@@ -122,16 +119,13 @@ pub static TWITTER_META: Lazy<Selector> = Lazy::new(|| {
 // ============================================================================
 
 /// Selector for `<h1>` elements
-pub static H1: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("h1").expect("Invalid selector: h1"));
+pub static H1: Lazy<Selector> = Lazy::new(|| Selector::parse("h1").expect("Invalid selector: h1"));
 
 /// Selector for `<h2>` elements
-pub static H2: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("h2").expect("Invalid selector: h2"));
+pub static H2: Lazy<Selector> = Lazy::new(|| Selector::parse("h2").expect("Invalid selector: h2"));
 
 /// Selector for `<h3>` elements
-pub static H3: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("h3").expect("Invalid selector: h3"));
+pub static H3: Lazy<Selector> = Lazy::new(|| Selector::parse("h3").expect("Invalid selector: h3"));
 
 /// Selector for all headings
 pub static HEADINGS: Lazy<Selector> =
@@ -142,28 +136,22 @@ pub static PARAGRAPH: Lazy<Selector> =
     Lazy::new(|| Selector::parse("p").expect("Invalid selector: p"));
 
 /// Selector for `<ul>` (unordered list) elements
-pub static UL: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("ul").expect("Invalid selector: ul"));
+pub static UL: Lazy<Selector> = Lazy::new(|| Selector::parse("ul").expect("Invalid selector: ul"));
 
 /// Selector for `<ol>` (ordered list) elements
-pub static OL: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("ol").expect("Invalid selector: ol"));
+pub static OL: Lazy<Selector> = Lazy::new(|| Selector::parse("ol").expect("Invalid selector: ol"));
 
 /// Selector for `<li>` (list item) elements
-pub static LI: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("li").expect("Invalid selector: li"));
+pub static LI: Lazy<Selector> = Lazy::new(|| Selector::parse("li").expect("Invalid selector: li"));
 
 /// Selector for `<dl>` (definition list) elements
-pub static DL: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("dl").expect("Invalid selector: dl"));
+pub static DL: Lazy<Selector> = Lazy::new(|| Selector::parse("dl").expect("Invalid selector: dl"));
 
 /// Selector for `<dt>` (definition term) elements
-pub static DT: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("dt").expect("Invalid selector: dt"));
+pub static DT: Lazy<Selector> = Lazy::new(|| Selector::parse("dt").expect("Invalid selector: dt"));
 
 /// Selector for `<dd>` (definition description) elements
-pub static DD: Lazy<Selector> =
-    Lazy::new(|| Selector::parse("dd").expect("Invalid selector: dd"));
+pub static DD: Lazy<Selector> = Lazy::new(|| Selector::parse("dd").expect("Invalid selector: dd"));
 
 /// Selector for `<main>` elements
 pub static MAIN: Lazy<Selector> =
@@ -199,8 +187,7 @@ pub static ASIDE: Lazy<Selector> =
 
 /// Selector for clickable elements
 pub static CLICKABLE: Lazy<Selector> = Lazy::new(|| {
-    Selector::parse("a, button, [onclick], [role=\"button\"]")
-        .expect("Invalid selector: clickable")
+    Selector::parse("a, button, [onclick], [role=\"button\"]").expect("Invalid selector: clickable")
 });
 
 /// Selector for expandable/collapsible elements
@@ -215,14 +202,12 @@ pub static EXPANDABLE: Lazy<Selector> = Lazy::new(|| {
 
 /// Email address pattern (RFC 5322 simplified)
 pub static EMAIL: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-        .expect("Invalid regex: email")
+    Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").expect("Invalid regex: email")
 });
 
 /// URL pattern (http/https)
-pub static URL: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"https?://[^\s<>"']+"#).expect("Invalid regex: URL")
-});
+pub static URL: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"https?://[^\s<>"']+"#).expect("Invalid regex: URL"));
 
 /// Phone number pattern (various formats)
 pub static PHONE: Lazy<Regex> = Lazy::new(|| {
@@ -256,9 +241,8 @@ pub static PERCENTAGE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"\d+(?:\.\d+)?%").expect("Invalid regex: percentage"));
 
 /// Numeric pattern (integers and decimals)
-pub static NUMERIC: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"-?\d+(?:,\d{3})*(?:\.\d+)?").expect("Invalid regex: numeric")
-});
+pub static NUMERIC: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"-?\d+(?:,\d{3})*(?:\.\d+)?").expect("Invalid regex: numeric"));
 
 // ============================================================================
 // REGEX PATTERNS - Content Patterns
@@ -289,14 +273,18 @@ pub static CREDIT_CARD_MASKED: Lazy<Regex> = Lazy::new(|| {
 
 /// "X is a/an Y" pattern - extracts "is_a" relations
 pub static IS_A: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?i)([A-Z][a-zA-Z\s]{1,50})\s+(?:is|was|are|were)\s+(?:a|an|the)\s+([a-zA-Z\s]{2,50})")
-        .expect("Invalid regex: is_a")
+    Regex::new(
+        r"(?i)([A-Z][a-zA-Z\s]{1,50})\s+(?:is|was|are|were)\s+(?:a|an|the)\s+([a-zA-Z\s]{2,50})",
+    )
+    .expect("Invalid regex: is_a")
 });
 
 /// "X has Y" pattern - extracts "has" relations
 pub static HAS: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?i)([A-Z][a-zA-Z\s]{1,50})\s+(?:has|have|had)\s+(?:a|an|the)?\s*([a-zA-Z\s]{2,50})")
-        .expect("Invalid regex: has")
+    Regex::new(
+        r"(?i)([A-Z][a-zA-Z\s]{1,50})\s+(?:has|have|had)\s+(?:a|an|the)?\s*([a-zA-Z\s]{2,50})",
+    )
+    .expect("Invalid regex: has")
 });
 
 /// "X works at/for Y" pattern - extracts employment relations

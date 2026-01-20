@@ -42,8 +42,8 @@ impl Scheduler {
 
     pub fn active_workers(&self) -> usize {
         let max = self.semaphore.available_permits();
-        let total = self.semaphore.available_permits() + 
-                   (self.handles.len() - self.handles.iter().filter(|h| h.is_finished()).count());
+        let total = self.semaphore.available_permits()
+            + (self.handles.len() - self.handles.iter().filter(|h| h.is_finished()).count());
         total - max
     }
 }

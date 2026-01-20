@@ -72,11 +72,8 @@ impl Worker {
                         tracing::info!("{}", redirect_msg);
 
                         // Write to warnings log
-                        let warning_entry = format!(
-                            "[{}] {}\n",
-                            chrono::Utc::now().to_rfc3339(),
-                            redirect_msg
-                        );
+                        let warning_entry =
+                            format!("[{}] {}\n", chrono::Utc::now().to_rfc3339(), redirect_msg);
                         if let Ok(mut file) = tokio::fs::OpenOptions::new()
                             .create(true)
                             .append(true)

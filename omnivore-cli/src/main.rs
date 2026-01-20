@@ -792,29 +792,30 @@ async fn crawl_command(
                 tokio::fs::write(&page_file, page_json).await?;
 
                 // Save tables as CSV if requested
-                if extract_tables && tables_dir.is_some() {
-                    let tables_dir = tables_dir.as_ref().unwrap();
-                    for (table_idx, table) in cleaned.tables.iter().enumerate() {
-                        let table_title = table
-                            .title
-                            .as_ref()
-                            .map(|t| t.replace(" ", "_").replace("/", "_"))
-                            .unwrap_or_else(|| format!("table_{}", table_idx + 1));
+                if extract_tables {
+                    if let Some(ref tables_dir) = tables_dir {
+                        for (table_idx, table) in cleaned.tables.iter().enumerate() {
+                            let table_title = table
+                                .title
+                                .as_ref()
+                                .map(|t| t.replace(" ", "_").replace("/", "_"))
+                                .unwrap_or_else(|| format!("table_{}", table_idx + 1));
 
-                        let csv_filename = format!("page_{:04}_{}.csv", idx + 1, table_title);
-                        let csv_path = tables_dir.join(&csv_filename);
+                            let csv_filename = format!("page_{:04}_{}.csv", idx + 1, table_title);
+                            let csv_path = tables_dir.join(&csv_filename);
 
-                        let csv_content = table.to_csv();
-                        tokio::fs::write(&csv_path, csv_content).await?;
+                            let csv_content = table.to_csv();
+                            tokio::fs::write(&csv_path, csv_content).await?;
 
-                        all_tables.push(serde_json::json!({
-                            "page": idx + 1,
-                            "url": result.url.clone(),
-                            "table_title": table.title.clone(),
-                            "csv_file": csv_filename,
-                            "rows": table.rows.len(),
-                            "columns": table.headers.len(),
-                        }));
+                            all_tables.push(serde_json::json!({
+                                "page": idx + 1,
+                                "url": result.url.clone(),
+                                "table_title": table.title.clone(),
+                                "csv_file": csv_filename,
+                                "rows": table.rows.len(),
+                                "columns": table.headers.len(),
+                            }));
+                        }
                     }
                 }
 

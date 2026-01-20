@@ -165,18 +165,17 @@ impl CodebaseDetector {
             info.languages.push(Language::JavaScript);
         }
 
-        if json.get("dependencies").is_some() || json.get("devDependencies").is_some() {
-            if !info.build_tools.contains(&BuildTool::Npm) {
+        if (json.get("dependencies").is_some() || json.get("devDependencies").is_some())
+            && !info.build_tools.contains(&BuildTool::Npm) {
                 info.build_tools.push(BuildTool::Npm);
             }
-        }
 
         let deps = json.get("dependencies").and_then(|d| d.as_object());
         let dev_deps = json.get("devDependencies").and_then(|d| d.as_object());
 
         let check_dep = |name: &str| -> bool {
-            deps.map_or(false, |d| d.contains_key(name))
-                || dev_deps.map_or(false, |d| d.contains_key(name))
+            deps.is_some_and(|d| d.contains_key(name))
+                || dev_deps.is_some_and(|d| d.contains_key(name))
         };
 
         if check_dep("next") {
@@ -441,7 +440,7 @@ impl CodebaseDetector {
         let main_lang = info
             .main_language
             .as_ref()
-            .map(|l| format!("{:?}", l))
+            .map(|l| format!("{l:?}"))
             .unwrap_or_else(|| "Unknown".to_string());
 
         let framework_str = if !info.frameworks.is_empty() {

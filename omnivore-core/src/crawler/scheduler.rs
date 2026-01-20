@@ -20,7 +20,14 @@ impl Scheduler {
     where
         F: Future<Output = ()> + Send + 'static,
     {
-        let permit = self.semaphore.clone().acquire_owned().await.unwrap();
+        let permit = match self.semaphore.clone().acquire_owned().await {
+            Ok(p) => p,
+            Err(e) => {
+                // Semaphore is closed - this should only happen during shutdown
+                tracing::error!("Failed to acquire semaphore permit: {}", e);
+                return tokio::spawn(async {});
+            }
+        };
         tokio::spawn(async move {
             let _permit = permit; // Hold permit until task completes
             task.await;

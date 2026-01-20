@@ -1,5 +1,6 @@
-use crate::{CrawlConfig, CrawlResult, Error, Result};
 use crate::extractor::ContentExtractor;
+use crate::patterns;
+use crate::{CrawlConfig, CrawlResult, Error, Result};
 use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
@@ -11,7 +12,11 @@ pub struct Worker {
 }
 
 impl Worker {
-    pub fn new(config: Arc<CrawlConfig>) -> Self {
+    /// Create a new worker with the given configuration.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP client cannot be built.
+    pub fn new(config: Arc<CrawlConfig>) -> Result<Self> {
         let client = Client::builder()
             .user_agent(&config.user_agent)
             .timeout(Duration::from_millis(config.timeout_ms))
@@ -19,9 +24,9 @@ impl Worker {
             .gzip(true)
             .brotli(true)
             .build()
-            .expect("Failed to build HTTP client");
+            .map_err(Error::Network)?;
 
-        Self { client, config }
+        Ok(Self { client, config })
     }
 
     pub async fn crawl(&self, url: Url) -> Result<CrawlResult> {
@@ -40,7 +45,7 @@ impl Worker {
         let extractor = ContentExtractor::new();
         let cleaned_content = Some(extractor.extract_clean_content(&content));
 
-        let links = self.extract_links(&url, &content)?;
+        let links = self.extract_links(&url, &content);
 
         Ok(CrawlResult {
             url: url.to_string(),
@@ -65,7 +70,7 @@ impl Worker {
                     if response.url() != url {
                         let redirect_msg = format!("Redirected: {} -> {}", url, response.url());
                         tracing::info!("{}", redirect_msg);
-                        
+
                         // Write to warnings log
                         let warning_entry = format!(
                             "[{}] {}\n",
@@ -79,7 +84,9 @@ impl Worker {
                             .await
                         {
                             use tokio::io::AsyncWriteExt;
-                            let _ = file.write_all(warning_entry.as_bytes()).await;
+                            if let Err(e) = file.write_all(warning_entry.as_bytes()).await {
+                                tracing::warn!("Failed to write warning log: {}", e);
+                            }
                         }
                     }
                     return Ok(response);
@@ -102,16 +109,21 @@ impl Worker {
             }
         }
 
-        Err(Error::Network(last_error.unwrap()))
+        // last_error is always Some here because we only exit the loop after an error
+        match last_error {
+            Some(e) => Err(Error::Network(e)),
+            None => Err(Error::Unknown(
+                "Max retries reached with no error recorded".to_string(),
+            )),
+        }
     }
 
-    fn extract_links(&self, base_url: &Url, html: &str) -> Result<Vec<Url>> {
+    fn extract_links(&self, base_url: &Url, html: &str) -> Vec<Url> {
         let document = scraper::Html::parse_document(html);
-        let selector = scraper::Selector::parse("a[href]").unwrap();
-
         let mut links = Vec::new();
 
-        for element in document.select(&selector) {
+        // Use pre-compiled selector from patterns module
+        for element in document.select(&patterns::ANCHOR_HREF) {
             if let Some(href) = element.value().attr("href") {
                 if let Ok(absolute_url) = base_url.join(href) {
                     if absolute_url.scheme() == "http" || absolute_url.scheme() == "https" {
@@ -121,6 +133,6 @@ impl Worker {
             }
         }
 
-        Ok(links)
+        links
     }
 }

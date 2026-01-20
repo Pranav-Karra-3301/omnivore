@@ -82,7 +82,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     // This allows the confirmation prompt to display properly for non-git directories
     let source_type = SourceType::from_string(&args.source)?;
     if args.verbose {
-        println!("Source type: {:?}", source_type);
+        println!("Source type: {source_type:?}");
     }
 
     // Now create the progress bar after any user interaction
@@ -176,7 +176,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
         let repo_name = extract_repo_name(&args.source);
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let extension = if args.json { "json" } else { "txt" };
-        Some(PathBuf::from(format!("{}_{}.{}", repo_name, timestamp, extension)))
+        Some(PathBuf::from(format!("{repo_name}_{timestamp}.{extension}")))
     } else {
         args.output.clone()
     };
@@ -192,7 +192,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
         };
         
         if args.stdout {
-            print!("{}", output_content);
+            print!("{output_content}");
             std::io::Write::flush(&mut std::io::stdout())?;
         } else if let Some(ref path) = output_path {
             tokio::fs::write(path, output_content).await?;
@@ -220,7 +220,7 @@ pub async fn execute_git_command(args: GitArgs) -> Result<()> {
     
     println!(
         "{}",
-        format!("✅ Successfully processed {} files", files_written)
+        format!("✅ Successfully processed {files_written} files")
             .bold()
             .green()
     );
@@ -272,7 +272,7 @@ fn normalize_pattern(pattern: &str) -> String {
         // Handle patterns like "md", ".md", "rs", ".rs" etc.
         let cleaned = pattern.trim_start_matches('.');
         if !cleaned.is_empty() && cleaned.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
-            return format!("**/*.{}", cleaned);
+            return format!("**/*.{cleaned}");
         }
     }
     pattern.to_string()

@@ -405,8 +405,8 @@ fn create_template() -> Result<()> {
     
     template.save()?;
     
-    println!("{}", format!("✅ Template '{}' created successfully!", name).green());
-    println!("{}", format!("Use it with: omnivore crawl <URL> --template {}", name).dimmed());
+    println!("{}", format!("✅ Template '{name}' created successfully!").green());
+    println!("{}", format!("Use it with: omnivore crawl <URL> --template {name}").dimmed());
     
     Ok(())
 }
@@ -421,7 +421,7 @@ async fn test_configuration(config: &OmnivoreConfig) -> Result<()> {
         let client = reqwest::Client::new();
         let response = client
             .get("https://api.openai.com/v1/models")
-            .header("Authorization", format!("Bearer {}", api_key))
+            .header("Authorization", format!("Bearer {api_key}"))
             .send()
             .await;
         
@@ -455,7 +455,7 @@ async fn test_configuration(config: &OmnivoreConfig) -> Result<()> {
     print!("Checking templates directory... ");
     if config.templates.templates_dir.exists() {
         let template_count = ExtractionTemplate::list_templates()?.len();
-        println!("{}", format!("✓ ({} templates found)", template_count).green());
+        println!("{}", format!("✓ ({template_count} templates found)").green());
     } else {
         fs::create_dir_all(&config.templates.templates_dir)?;
         println!("{}", "✓ Created".green());

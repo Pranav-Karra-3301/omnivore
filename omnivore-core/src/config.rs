@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::env;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct OmnivoreConfig {
     #[serde(default)]
     pub ai: AiConfig,
@@ -100,18 +101,6 @@ pub struct AdvancedConfig {
     pub deduplication: bool,
 }
 
-impl Default for OmnivoreConfig {
-    fn default() -> Self {
-        Self {
-            ai: AiConfig::default(),
-            extraction: ExtractionConfig::default(),
-            browser: BrowserConfig::default(),
-            output: OutputConfig::default(),
-            templates: TemplateConfig::default(),
-            advanced: AdvancedConfig::default(),
-        }
-    }
-}
 
 impl Default for AiConfig {
     fn default() -> Self {
@@ -314,7 +303,7 @@ pub struct PatternRule {
 impl ExtractionTemplate {
     pub fn load(name: &str) -> Result<Self> {
         let config = OmnivoreConfig::load()?;
-        let template_path = config.templates.templates_dir.join(format!("{}.yaml", name));
+        let template_path = config.templates.templates_dir.join(format!("{name}.yaml"));
         
         if !template_path.exists() {
             anyhow::bail!("Template '{}' not found", name);

@@ -47,7 +47,7 @@ impl FileFilter {
         let mut builder = GlobSetBuilder::new();
         for pattern in patterns {
             let glob = Glob::new(&pattern)
-                .with_context(|| format!("Invalid include pattern: {}", pattern))?;
+                .with_context(|| format!("Invalid include pattern: {pattern}"))?;
             builder.add(glob);
         }
         self.include_patterns = Some(builder.build()?);
@@ -58,7 +58,7 @@ impl FileFilter {
         let mut builder = GlobSetBuilder::new();
         for pattern in patterns {
             let glob = Glob::new(&pattern)
-                .with_context(|| format!("Invalid exclude pattern: {}", pattern))?;
+                .with_context(|| format!("Invalid exclude pattern: {pattern}"))?;
             builder.add(glob);
         }
         self.exclude_patterns = Some(builder.build()?);

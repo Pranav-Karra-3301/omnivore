@@ -53,19 +53,19 @@ impl CodeOrganizer {
                 .codebase_info
                 .main_language
                 .as_ref()
-                .map(|l| format!("{:?}", l))
+                .map(|l| format!("{l:?}"))
                 .unwrap_or_else(|| "Unknown".to_string()),
             frameworks: self
                 .codebase_info
                 .frameworks
                 .iter()
-                .map(|f| format!("{:?}", f))
+                .map(|f| format!("{f:?}"))
                 .collect(),
             build_tools: self
                 .codebase_info
                 .build_tools
                 .iter()
-                .map(|b| format!("{:?}", b))
+                .map(|b| format!("{b:?}"))
                 .collect(),
             total_files: self.files.len(),
         }
@@ -78,7 +78,7 @@ impl CodeOrganizer {
             let category = self.determine_category(&file.relative_path);
             categories
                 .entry(category)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(file);
         }
 
@@ -197,7 +197,7 @@ impl CodeOrganizer {
             "Scripts" => "Build and utility scripts".to_string(),
             "Binaries" => "Executable files and commands".to_string(),
             "Application" => "Application entry points and core logic".to_string(),
-            _ => format!("{} files", category),
+            _ => format!("{category} files"),
         }
     }
 
@@ -297,11 +297,11 @@ Total Files:  {}
             for file in &section.files {
                 output.push_str(&format!("   • {}\n", file.relative_path.display()));
             }
-            output.push_str("\n");
+            output.push('\n');
         }
 
         if include_content {
-            output.push_str("\n");
+            output.push('\n');
             output.push_str("================================================================================\n");
             output.push_str("                              SOURCE CODE\n");
             output.push_str("================================================================================\n\n");
@@ -311,26 +311,18 @@ Total Files:  {}
                     continue;
                 }
 
-                output.push_str(&format!(
-                    "\n╔══════════════════════════════════════════════════════════════════════════════╗\n"
-                ));
+                output.push_str("\n╔══════════════════════════════════════════════════════════════════════════════╗\n");
                 output.push_str(&format!(
                     "║ {} - {} file(s)\n",
                     section.name.to_uppercase(),
                     section.files.len()
                 ));
-                output.push_str(&format!(
-                    "╚══════════════════════════════════════════════════════════════════════════════╝\n\n"
-                ));
+                output.push_str("╚══════════════════════════════════════════════════════════════════════════════╝\n\n");
 
                 for file in &section.files {
-                    output.push_str(&format!(
-                        "┌─────────────────────────────────────────────────────────────────────────────┐\n"
-                    ));
+                    output.push_str("┌─────────────────────────────────────────────────────────────────────────────┐\n");
                     output.push_str(&format!("│ File: {}\n", file.relative_path.display()));
-                    output.push_str(&format!(
-                        "└─────────────────────────────────────────────────────────────────────────────┘\n\n"
-                    ));
+                    output.push_str("└─────────────────────────────────────────────────────────────────────────────┘\n\n");
 
                     if let Ok(content) = std::fs::read_to_string(&file.path) {
                         let lines: Vec<&str> = content.lines().collect();
@@ -340,7 +332,7 @@ Total Files:  {}
                     } else {
                         output.push_str("[Unable to read file content]\n");
                     }
-                    output.push_str("\n");
+                    output.push('\n');
                 }
             }
         }

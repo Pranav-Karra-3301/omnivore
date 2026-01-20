@@ -321,7 +321,7 @@ impl UniversalDetector {
     fn find_label_for_field(&self, field: &ElementRef) -> Option<String> {
         // Try to find associated label
         if let Some(id) = field.value().attr("id") {
-            let label_selector = format!("label[for='{}']", id);
+            let label_selector = format!("label[for='{id}']");
             if let Ok(selector) = Selector::parse(&label_selector) {
                 if let Some(label) = self.document.select(&selector).next() {
                     return Some(label.text().collect::<String>().trim().to_string());
@@ -513,7 +513,7 @@ impl UniversalDetector {
                     
                     // Check if link points to downloadable file
                     for ext in &download_extensions {
-                        if lower_href.ends_with(&format!(".{}", ext)) {
+                        if lower_href.ends_with(&format!(".{ext}")) {
                             let text = link.text().collect::<String>().trim().to_string();
                             let file_size = link.value().attr("data-size")
                                 .map(|s| s.to_string());
@@ -774,7 +774,7 @@ impl UniversalDetector {
                 report.push_str(&format!("  - {} ({} rows, type: {})\n", 
                     table.selector, table.row_count, table.likely_data_type));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Forms
@@ -784,7 +784,7 @@ impl UniversalDetector {
                 report.push_str(&format!("  - {} ({} fields)\n", 
                     form.selector, form.fields.len()));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Dropdowns
@@ -794,16 +794,16 @@ impl UniversalDetector {
                 report.push_str(&format!("  - {} ({} options)\n", 
                     dropdown.selector, dropdown.option_count));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Pagination
         if let Some(pagination) = &detected.pagination {
             report.push_str(&format!("📄 Pagination: {}\n", pagination.pagination_type));
             if let Some(total) = pagination.total_pages {
-                report.push_str(&format!("  Total pages: {}\n", total));
+                report.push_str(&format!("  Total pages: {total}\n"));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Downloads
@@ -812,7 +812,7 @@ impl UniversalDetector {
             for download in &detected.downloads {
                 report.push_str(&format!("  - {} ({})\n", download.text, download.file_type));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Contact Info
@@ -824,7 +824,7 @@ impl UniversalDetector {
             if !detected.contacts.phones.is_empty() {
                 report.push_str(&format!("  Phones: {}\n", detected.contacts.phones.join(", ")));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Interactive Elements
@@ -835,15 +835,15 @@ impl UniversalDetector {
             let tabs = detected.interactive.iter().filter(|e| e.element_type == "tab").count();
             
             if buttons > 0 {
-                report.push_str(&format!("  Buttons: {}\n", buttons));
+                report.push_str(&format!("  Buttons: {buttons}\n"));
             }
             if accordions > 0 {
-                report.push_str(&format!("  Accordions: {}\n", accordions));
+                report.push_str(&format!("  Accordions: {accordions}\n"));
             }
             if tabs > 0 {
-                report.push_str(&format!("  Tabs: {}\n", tabs));
+                report.push_str(&format!("  Tabs: {tabs}\n"));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Media
@@ -851,7 +851,7 @@ impl UniversalDetector {
                          detected.media.videos.len() + 
                          detected.media.audio.len();
         if total_media > 0 {
-            report.push_str(&format!("🖼️ Media Elements: {}\n", total_media));
+            report.push_str(&format!("🖼️ Media Elements: {total_media}\n"));
             if !detected.media.images.is_empty() {
                 report.push_str(&format!("  Images: {}\n", detected.media.images.len()));
             }
@@ -861,7 +861,7 @@ impl UniversalDetector {
             if !detected.media.audio.is_empty() {
                 report.push_str(&format!("  Audio: {}\n", detected.media.audio.len()));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
         
         // Structured Data

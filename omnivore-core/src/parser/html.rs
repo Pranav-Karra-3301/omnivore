@@ -1,5 +1,7 @@
+use crate::patterns;
 use crate::{Error, Result};
-use scraper::{Html, Selector};
+use scraper::Html;
+use scraper::Selector;
 use serde_json::Value;
 
 pub struct HtmlParser {
@@ -35,19 +37,20 @@ impl HtmlParser {
             .collect())
     }
 
+    /// Extract structured data from JSON-LD scripts and microdata.
     pub fn extract_structured_data(&self) -> Result<Vec<Value>> {
         let mut data = Vec::new();
 
-        let ld_json_selector = Selector::parse(r#"script[type="application/ld+json"]"#).unwrap();
-        for element in self.document.select(&ld_json_selector) {
+        // Extract JSON-LD using pre-compiled selector
+        for element in self.document.select(&patterns::JSON_LD) {
             let text = element.text().collect::<String>();
             if let Ok(json) = serde_json::from_str::<Value>(&text) {
                 data.push(json);
             }
         }
 
-        let microdata_selector = Selector::parse("[itemscope]").unwrap();
-        for element in self.document.select(&microdata_selector) {
+        // Extract microdata using pre-compiled selector
+        for element in self.document.select(&patterns::MICRODATA) {
             if let Some(item_data) = self.extract_microdata(&element) {
                 data.push(item_data);
             }
@@ -63,7 +66,8 @@ impl HtmlParser {
             item.insert("@type".to_string(), Value::String(itemtype.to_string()));
         }
 
-        let prop_selector = Selector::parse("[itemprop]").ok()?;
+        // Use safe selector parsing for dynamic selector
+        let prop_selector = patterns::parse_selector("[itemprop]")?;
         for prop_element in element.select(&prop_selector) {
             if let Some(prop_name) = prop_element.value().attr("itemprop") {
                 let value = if let Some(content) = prop_element.value().attr("content") {
@@ -82,11 +86,12 @@ impl HtmlParser {
         }
     }
 
+    /// Extract OpenGraph metadata from the document.
     pub fn extract_opengraph(&self) -> serde_json::Map<String, Value> {
         let mut og_data = serde_json::Map::new();
-        let og_selector = Selector::parse("meta[property^='og:']").unwrap();
 
-        for element in self.document.select(&og_selector) {
+        // Use pre-compiled selector for OpenGraph meta tags
+        for element in self.document.select(&patterns::OG_META) {
             if let (Some(property), Some(content)) = (
                 element.value().attr("property"),
                 element.value().attr("content"),
@@ -99,11 +104,12 @@ impl HtmlParser {
         og_data
     }
 
+    /// Extract Twitter Card metadata from the document.
     pub fn extract_twitter_card(&self) -> serde_json::Map<String, Value> {
         let mut twitter_data = serde_json::Map::new();
-        let twitter_selector = Selector::parse("meta[name^='twitter:']").unwrap();
 
-        for element in self.document.select(&twitter_selector) {
+        // Use pre-compiled selector for Twitter meta tags
+        for element in self.document.select(&patterns::TWITTER_META) {
             if let (Some(name), Some(content)) = (
                 element.value().attr("name"),
                 element.value().attr("content"),

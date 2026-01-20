@@ -284,7 +284,7 @@ impl ContentExtractor {
         let code_pattern = regex::Regex::new(r"^([A-Z]+\s*\d{3}[A-Z]?)\s*(.*)").unwrap();
         
         for level in 2..=5 {
-            let selector_str = format!("h{}", level);
+            let selector_str = format!("h{level}");
             if let Ok(selector) = Selector::parse(&selector_str) {
                 for heading in document.select(&selector) {
                     let heading_text = heading.text().collect::<String>();
@@ -332,9 +332,9 @@ impl ContentExtractor {
     
     #[allow(dead_code)]
     fn parse_course_dl(&self, _dl: scraper::ElementRef) -> Vec<CourseInfo> {
-        let courses = Vec::new();
+        
         // TODO: Implementation for definition list parsing
-        courses
+        Vec::new()
     }
     
     fn extract_credits(&self, text: &str) -> Option<String> {
@@ -445,28 +445,65 @@ impl ContentExtractor {
     }
     
     fn is_in_content_area(&self, element: scraper::ElementRef) -> bool {
-        // Check if element is within a content area
-        let content_selectors = vec![
-            "main", "article", "[role='main']", 
-            ".content", "#content", ".main-content"
-        ];
-        
-        // Walk up the DOM tree to check for content containers
-        let current = element;
-        for _ in 0..10 {  // Check up to 10 levels
-            for selector_str in &content_selectors {
-                if let Ok(selector) = Selector::parse(selector_str) {
-                    if current.select(&selector).next().is_some() {
+        // Check if element is within a content area by examining:
+        // 1. The element's own tag name and attributes
+        // 2. Walking up the ancestor chain
+
+        let content_tags = ["main", "article", "section"];
+        let content_classes = ["content", "main-content", "article-content", "post-content", "entry-content"];
+        let content_ids = ["content", "main-content", "main", "article"];
+
+        // Helper to check if an element matches content area criteria
+        let matches_content_area = |el: &scraper::ElementRef| {
+            let tag = el.value().name();
+
+            // Check tag name
+            if content_tags.contains(&tag) {
+                return true;
+            }
+
+            // Check role attribute
+            if let Some(role) = el.value().attr("role") {
+                if role == "main" || role == "article" {
+                    return true;
+                }
+            }
+
+            // Check class attribute
+            if let Some(class) = el.value().attr("class") {
+                for content_class in &content_classes {
+                    if class.contains(content_class) {
                         return true;
                     }
                 }
             }
-            
-            // Try to get parent - this is a simplified check
-            // In real implementation, we'd need proper parent traversal
-            break;
+
+            // Check id attribute
+            if let Some(id) = el.value().attr("id") {
+                for content_id in &content_ids {
+                    if id == *content_id {
+                        return true;
+                    }
+                }
+            }
+
+            false
+        };
+
+        // Check the element itself first
+        if matches_content_area(&element) {
+            return true;
         }
-        
+
+        // Walk up the ancestor chain using scraper's ancestors() method
+        for ancestor in element.ancestors() {
+            if let Some(ancestor_element) = scraper::ElementRef::wrap(ancestor) {
+                if matches_content_area(&ancestor_element) {
+                    return true;
+                }
+            }
+        }
+
         false
     }
     

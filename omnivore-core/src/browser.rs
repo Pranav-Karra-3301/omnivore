@@ -85,7 +85,7 @@ impl BrowserEngine {
     
     pub async fn navigate(&self, url: &str) -> Result<()> {
         self.driver.goto(url).await
-            .context(format!("Failed to navigate to {}", url))?;
+            .context(format!("Failed to navigate to {url}"))?;
         
         // Wait for page to be ready
         self.wait_for_page_ready().await?;
@@ -193,10 +193,10 @@ impl BrowserEngine {
             
             for option in options {
                 // Click the option
-                if let Ok(_) = option.click().await {
+                if option.click().await.is_ok() {
                     sleep(Duration::from_millis(1000)).await;
                     self.wait_for_page_ready().await?;
-                    
+
                     // Get page content
                     let content = self.get_page_content().await?;
                     contents.push(content);
@@ -204,9 +204,9 @@ impl BrowserEngine {
             }
         } else {
             // Handle custom dropdowns
-            if let Ok(_) = dropdown.click().await {
+            if dropdown.click().await.is_ok() {
                 sleep(Duration::from_millis(500)).await;
-                
+
                 // Look for dropdown items
                 let item_selectors = vec![
                     "li",
@@ -214,17 +214,17 @@ impl BrowserEngine {
                     "[role='option']",
                     ".option",
                 ];
-                
+
                 for selector in item_selectors {
                     if let Ok(items) = self.driver.find_all(By::Css(selector)).await {
                         for item in items {
-                            if let Ok(_) = item.click().await {
+                            if item.click().await.is_ok() {
                                 sleep(Duration::from_millis(1000)).await;
                                 self.wait_for_page_ready().await?;
-                                
+
                                 let content = self.get_page_content().await?;
                                 contents.push(content);
-                                
+
                                 // Re-open dropdown for next item
                                 dropdown.click().await.ok();
                                 sleep(Duration::from_millis(500)).await;

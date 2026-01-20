@@ -73,7 +73,7 @@ impl OutputWriter {
             .context("Failed to serialize to JSON")?;
 
         if self.force_stdout || self.output_path.is_none() {
-            print!("{}", json);
+            print!("{json}");
             io::stdout().flush()?;
         } else if let Some(ref output_path) = self.output_path {
             tokio::fs::write(output_path, json)
@@ -100,7 +100,7 @@ impl OutputWriter {
         }
 
         if self.force_stdout || self.output_path.is_none() {
-            print!("{}", output);
+            print!("{output}");
             io::stdout().flush()?;
         } else if let Some(ref output_path) = self.output_path {
             tokio::fs::write(output_path, output)

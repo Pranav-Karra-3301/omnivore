@@ -70,8 +70,8 @@ impl AiInterpreter {
         format!(r#"
 You are an expert web scraping assistant. Analyze the user's request and convert it into a structured extraction plan.
 
-User Request: "{}"
-Target URL: {}
+User Request: "{user_request}"
+Target URL: {url}
 
 Convert this request into a JSON extraction plan with the following structure:
 {{
@@ -132,7 +132,7 @@ Examples of user requests and their interpretations:
 
 Based on the user's request, provide a comprehensive extraction plan.
 Return ONLY valid JSON, no additional text or explanation.
-"#, user_request, url)
+"#)
     }
     
     async fn call_openai(&self, prompt: &str) -> Result<String> {
@@ -223,16 +223,16 @@ Return ONLY valid JSON, no additional text or explanation.
     
     pub async fn suggest_selectors(&self, html_sample: &str, target_type: &str) -> Result<Vec<String>> {
         let prompt = format!(r#"
-Analyze this HTML sample and suggest CSS selectors for extracting {} data:
+Analyze this HTML sample and suggest CSS selectors for extracting {target_type} data:
 
 HTML:
-{}
+{html_sample}
 
 Provide a JSON array of the most likely CSS selectors that would capture this type of data.
 Consider common patterns and be specific enough to avoid false matches.
 
 Return ONLY a JSON array of strings, like: ["selector1", "selector2", "selector3"]
-"#, target_type, html_sample);
+"#);
         
         let response = self.call_openai(&prompt).await?;
         let selectors: Vec<String> = serde_json::from_str(&response)
@@ -246,7 +246,7 @@ Return ONLY a JSON array of strings, like: ["selector1", "selector2", "selector3
 Classify this web content and identify what type of data it contains:
 
 Text:
-{}
+{text}
 
 Return a JSON object with:
 {{
@@ -255,7 +255,7 @@ Return a JSON object with:
     "suggested_extraction": "Brief suggestion on what to extract",
     "confidence": 0.0-1.0
 }}
-"#, text);
+"#);
         
         let response = self.call_openai(&prompt).await?;
         let classification: ContentClassification = serde_json::from_str(&response)

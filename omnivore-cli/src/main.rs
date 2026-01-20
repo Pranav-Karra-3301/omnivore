@@ -242,14 +242,14 @@ fn print_banner() {
     
     // Show API key status
     let (_configured, status) = setup::check_api_key_status();
-    println!("{}", status);
+    println!("{status}");
     
     println!();
 }
 
 fn generate_default_filename(url: &Url, suffix: &str, format: &OutputFormat) -> PathBuf {
     let domain = url.domain().unwrap_or("unknown");
-    let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+    let sanitized_domain = domain.replace(['.', '/'], "_");
     let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
     let ext = match format {
         OutputFormat::Json => "json",
@@ -258,7 +258,7 @@ fn generate_default_filename(url: &Url, suffix: &str, format: &OutputFormat) -> 
         OutputFormat::Yaml => "yaml",
         OutputFormat::Text => "txt",
     };
-    PathBuf::from(format!("{}_{}{}.{}", sanitized_domain, timestamp, suffix, ext))
+    PathBuf::from(format!("{sanitized_domain}_{timestamp}{suffix}.{ext}"))
 }
 
 fn format_output_content(
@@ -282,16 +282,16 @@ fn format_output_content(
                 md.push_str(&format!("**Words:** {}\n\n", page.words));
                 
                 if let Some(text) = &page.text {
-                    md.push_str(&text);
+                    md.push_str(text);
                     md.push_str("\n\n");
                 }
                 
                 if !exclude_urls && !page.links.is_empty() {
                     md.push_str("### Links\n");
                     for link in &page.links {
-                        md.push_str(&format!("- {}\n", link));
+                        md.push_str(&format!("- {link}\n"));
                     }
-                    md.push_str("\n");
+                    md.push('\n');
                 }
                 md.push_str("---\n\n");
             }
@@ -300,7 +300,7 @@ fn format_output_content(
         
         OutputFormat::Csv => {
             let mut wtr = csv::Writer::from_writer(vec![]);
-            wtr.write_record(&["url", "title", "text", "word_count", "links"])?;
+            wtr.write_record(["url", "title", "text", "word_count", "links"])?;
             
             for page in &clean_output.content {
                 let links = if exclude_urls { 
@@ -308,7 +308,7 @@ fn format_output_content(
                 } else { 
                     page.links.join(", ")
                 };
-                wtr.write_record(&[
+                wtr.write_record([
                     &page.url,
                     page.title.as_ref().unwrap_or(&String::new()),
                     page.text.as_ref().unwrap_or(&String::new()),
@@ -334,17 +334,17 @@ fn format_output_content(
                 txt.push_str(&format!("Words: {}\n\n", page.words));
                 
                 if let Some(text) = &page.text {
-                    txt.push_str(&text);
+                    txt.push_str(text);
                     txt.push_str("\n\n");
                 }
                 
                 if !exclude_urls && !page.links.is_empty() {
                     txt.push_str("Links:\n");
                     for link in &page.links {
-                        txt.push_str(&format!("  - {}\n", link));
+                        txt.push_str(&format!("  - {link}\n"));
                     }
                 }
-                txt.push_str("\n");
+                txt.push('\n');
             }
             Ok(txt)
         },
@@ -400,7 +400,7 @@ async fn crawl_command(
     };
     
     if let Some(ref ai_query) = ai {
-        println!("  AI mode: {}", format!("\"{}\"", ai_query).cyan());
+        println!("  AI mode: {}", format!("\"{ai_query}\"").cyan());
     }
     
     if let Some(ref template_name) = template {
@@ -569,7 +569,7 @@ async fn crawl_command(
     // Handle AI extraction if specified
     if let Some(ref ai_query) = ai {
         println!();
-        println!("{}", format!("🤖 AI Mode: Processing query \"{}\"...", ai_query).bold().cyan());
+        println!("{}", format!("🤖 AI Mode: Processing query \"{ai_query}\"...").bold().cyan());
         
         let omnivore_config = omnivore_core::config::OmnivoreConfig::load().unwrap_or_default();
         
@@ -613,10 +613,10 @@ async fn crawl_command(
     if organize {
         // Create organized folder structure
         let domain = start_url.domain().unwrap_or("unknown");
-        let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+        let sanitized_domain = domain.replace(['.', '/'], "_");
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let output_dir = output.unwrap_or_else(|| {
-            PathBuf::from(format!("{}_{}_crawl", sanitized_domain, timestamp))
+            PathBuf::from(format!("{sanitized_domain}_{timestamp}_crawl"))
         });
         
         // Create output directory
@@ -773,7 +773,7 @@ async fn crawl_command(
             .filter_map(|result| {
                 if let Some(ref cleaned) = result.cleaned_content {
                     // Include if has structured content or meaningful text
-                    let has_content = cleaned.content.as_ref().map_or(false, |c| c.len() > 50) 
+                    let has_content = cleaned.content.as_ref().is_some_and(|c| c.len() > 50) 
                         || cleaned.structured.is_some();
                     
                     if has_content {
@@ -886,7 +886,7 @@ fn generate_parse_filename(input_file: &PathBuf) -> PathBuf {
         .and_then(|s| s.to_str())
         .unwrap_or("parsed");
     let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
-    PathBuf::from(format!("parsed_{}_{}.json", file_stem, timestamp))
+    PathBuf::from(format!("parsed_{file_stem}_{timestamp}.json"))
 }
 
 async fn parse_command(file: PathBuf, rules: Option<PathBuf>, output: Option<PathBuf>) -> Result<()> {
@@ -945,7 +945,7 @@ async fn parse_command(file: PathBuf, rules: Option<PathBuf>, output: Option<Pat
         output_path.display().to_string().yellow()
     );
     
-    if text_preview.len() > 0 {
+    if !text_preview.is_empty() {
         println!();
         println!("Text preview:");
         println!("{}", text_preview.dimmed());
@@ -1068,10 +1068,10 @@ async fn handle_crawl_results(
     if organize {
         // Use existing organize logic
         let domain = start_url.domain().unwrap_or("unknown");
-        let sanitized_domain = domain.replace('.', "_").replace('/', "_");
+        let sanitized_domain = domain.replace(['.', '/'], "_");
         let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
         let output_dir = output.unwrap_or_else(|| {
-            PathBuf::from(format!("{}_{}_crawl", sanitized_domain, timestamp))
+            PathBuf::from(format!("{sanitized_domain}_{timestamp}_crawl"))
         });
         
         tokio::fs::create_dir_all(&output_dir).await?;

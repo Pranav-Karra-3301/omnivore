@@ -4,6 +4,7 @@ pub mod extractor;
 pub mod graph;
 pub mod intelligence;
 pub mod parser;
+pub mod patterns;
 pub mod storage;
 pub mod table_extractor;
 pub mod config;
@@ -26,6 +27,18 @@ pub struct CrawlConfig {
     pub politeness: PolitenessConfig,
     pub timeout_ms: u64,
     pub max_retries: u32,
+    /// Maximum number of results to keep in memory before flushing to disk.
+    /// Set to 0 for unlimited (not recommended for large crawls).
+    #[serde(default = "default_max_results_in_memory")]
+    pub max_results_in_memory: usize,
+    /// Optional path to flush results to when max_results_in_memory is exceeded.
+    /// Results are written as JSON Lines (.jsonl) format for streaming reads.
+    #[serde(default)]
+    pub results_flush_path: Option<String>,
+}
+
+fn default_max_results_in_memory() -> usize {
+    10_000
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,6 +58,8 @@ impl Default for CrawlConfig {
             politeness: PolitenessConfig::default(),
             timeout_ms: 30000,
             max_retries: 3,
+            max_results_in_memory: default_max_results_in_memory(),
+            results_flush_path: None,
         }
     }
 }

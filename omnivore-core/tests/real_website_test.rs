@@ -581,7 +581,7 @@ fn test_company_relation_extraction() {
     let relations = RelationExtractor::extract(text).unwrap();
 
     // Should find founded relation
-    let founded: Vec<_> = relations
+    let _founded: Vec<_> = relations
         .iter()
         .filter(|r| r.predicate == "founded")
         .collect();
@@ -762,7 +762,7 @@ fn test_link_extraction_quality() {
     assert!(!wiki_cleaned.links.is_empty());
 
     // Test e-commerce sample
-    let ecom_cleaned = extractor.extract_clean_content(ECOMMERCE_SAMPLE);
+    let _ecom_cleaned = extractor.extract_clean_content(ECOMMERCE_SAMPLE);
     // May or may not have links depending on content
 
     // Test news sample

@@ -15,6 +15,7 @@ pub struct CodebaseInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum ProjectType {
     WebApplication,
     Library,
@@ -27,6 +28,7 @@ pub enum ProjectType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Language {
     Rust,
     JavaScript,
@@ -122,6 +124,7 @@ impl CodebaseDetector {
         Ok(info)
     }
 
+    #[allow(clippy::type_complexity)]
     fn detect_by_config_files(&self, info: &mut CodebaseInfo) -> Result<()> {
         let config_checks: Vec<(&str, fn(&Path, &mut CodebaseInfo) -> Result<()>)> = vec![
             ("package.json", Self::check_nodejs_project),

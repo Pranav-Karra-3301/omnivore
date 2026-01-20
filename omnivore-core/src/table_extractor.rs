@@ -471,7 +471,9 @@ impl TableExtractor {
                     if let Some(colspan) = cell.value().attr("colspan") {
                         if colspan.parse::<usize>().unwrap_or(1) > 3 {
                             let text = self.clean_text(&cell.text().collect::<String>());
-                            if text.len() > 10 && !self.looks_like_header(&[text.clone()]) {
+                            if text.len() > 10
+                                && !self.looks_like_header(std::slice::from_ref(&text))
+                            {
                                 footnotes.push(text);
                             }
                         }

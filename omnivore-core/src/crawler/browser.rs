@@ -278,7 +278,7 @@ impl BrowserEngine {
             if let Ok(options) = select.find_all(By::Css("option")).await {
                 for option in options.iter().skip(1) {
                     // Skip first (usually default) option
-                    if let Ok(_) = option.click().await {
+                    if option.click().await.is_ok() {
                         sleep(Duration::from_millis(1000)).await;
                         self.wait_for_page_ready(driver).await?;
 
@@ -306,7 +306,7 @@ impl BrowserEngine {
         for (idx, dropdown) in custom_dropdowns.iter().enumerate() {
             let label = dropdown.attr("aria-label").await.ok().flatten();
 
-            if let Ok(_) = dropdown.click().await {
+            if dropdown.click().await.is_ok() {
                 sleep(Duration::from_millis(500)).await;
 
                 // Look for dropdown items
@@ -316,7 +316,7 @@ impl BrowserEngine {
                 {
                     for item in items.iter().take(5) {
                         // Limit to first 5 items
-                        if let Ok(_) = item.click().await {
+                        if item.click().await.is_ok() {
                             sleep(Duration::from_millis(1000)).await;
                             self.wait_for_page_ready(driver).await?;
 
@@ -357,7 +357,7 @@ impl BrowserEngine {
             // Limit to first 10 filters
             let label = filter.attr("aria-label").await.ok().flatten();
 
-            if let Ok(_) = filter.click().await {
+            if filter.click().await.is_ok() {
                 sleep(Duration::from_millis(1000)).await;
                 self.wait_for_page_ready(driver).await?;
 

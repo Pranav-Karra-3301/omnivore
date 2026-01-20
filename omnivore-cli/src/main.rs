@@ -9,7 +9,7 @@ use omnivore_core::{
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read as IORead, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use url::Url;
 
 mod git;
@@ -401,6 +401,7 @@ fn format_output_content(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn crawl_command(
     url: String,
     workers: usize,
@@ -481,7 +482,6 @@ async fn crawl_command(
 
     // Handle browser mode separately
     if browser {
-        #[cfg(all())]
         {
             use omnivore_core::crawler::browser::BrowserEngine;
 
@@ -1025,7 +1025,7 @@ async fn crawl_command(
     Ok(())
 }
 
-fn generate_parse_filename(input_file: &PathBuf) -> PathBuf {
+fn generate_parse_filename(input_file: &Path) -> PathBuf {
     let file_stem = input_file
         .file_stem()
         .and_then(|s| s.to_str())
@@ -1151,7 +1151,6 @@ async fn docs_command() -> Result<()> {
     Ok(())
 }
 
-#[cfg(all())]
 fn convert_dynamic_to_crawl_result(
     dynamic: omnivore_core::crawler::browser::DynamicContent,
 ) -> Result<CrawlResult> {
@@ -1190,6 +1189,7 @@ fn convert_dynamic_to_crawl_result(
 }
 
 #[allow(dead_code)]
+#[allow(clippy::too_many_arguments)]
 async fn handle_crawl_results(
     crawl_results: Vec<CrawlResult>,
     start_url: &Url,

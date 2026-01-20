@@ -1,5 +1,5 @@
-use scraper::{Html, Selector, ElementRef};
 use regex::Regex;
+use scraper::{ElementRef, Html, Selector};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -136,13 +136,10 @@ impl UniversalDetector {
     pub fn new(html: &str, base_url: Option<&str>) -> Self {
         let document = Html::parse_document(html);
         let base_url = base_url.and_then(|u| Url::parse(u).ok());
-        
-        Self {
-            document,
-            base_url,
-        }
+
+        Self { document, base_url }
     }
-    
+
     pub fn detect_all(&self) -> DetectedElements {
         DetectedElements {
             tables: self.detect_tables(),
@@ -156,17 +153,17 @@ impl UniversalDetector {
             structured_data: self.detect_structured_data(),
         }
     }
-    
+
     pub fn detect_tables(&self) -> Vec<TableElement> {
         let mut tables = Vec::new();
-        
+
         if let Ok(selector) = Selector::parse("table") {
             for (idx, table) in self.document.select(&selector).enumerate() {
                 let headers = self.extract_table_headers(&table);
                 let row_count = table.select(&Selector::parse("tr").unwrap()).count();
                 let has_numeric = self.table_has_numeric_data(&table);
                 let data_type = self.classify_table_type(&table, &headers);
-                
+
                 tables.push(TableElement {
                     selector: format!("table:nth-of-type({})", idx + 1),
                     headers,
@@ -176,23 +173,23 @@ impl UniversalDetector {
                 });
             }
         }
-        
+
         // Also detect div-based tables
         self.detect_div_tables(&mut tables);
-        
+
         tables
     }
-    
+
     fn extract_table_headers(&self, table: &ElementRef) -> Vec<String> {
         let mut headers = Vec::new();
-        
+
         // Try th elements
         if let Ok(selector) = Selector::parse("thead th, th") {
             for th in table.select(&selector) {
                 headers.push(th.text().collect::<String>().trim().to_string());
             }
         }
-        
+
         // If no headers found, try first row
         if headers.is_empty() {
             if let Ok(selector) = Selector::parse("tr:first-child td") {
@@ -201,43 +198,48 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         headers
     }
-    
+
     fn table_has_numeric_data(&self, table: &ElementRef) -> bool {
         let numeric_regex = Regex::new(r"\d+\.?\d*").unwrap();
         let text = table.text().collect::<String>();
         numeric_regex.is_match(&text)
     }
-    
+
     fn classify_table_type(&self, table: &ElementRef, headers: &[String]) -> String {
         let text = table.text().collect::<String>().to_lowercase();
         let headers_text = headers.join(" ").to_lowercase();
-        
-        if headers_text.contains("price") || headers_text.contains("cost") || 
-           text.contains("$") || text.contains("€") || text.contains("£") {
+
+        if headers_text.contains("price")
+            || headers_text.contains("cost")
+            || text.contains("$")
+            || text.contains("€")
+            || text.contains("£")
+        {
             "financial".to_string()
-        } else if headers_text.contains("product") || headers_text.contains("item") ||
-                  headers_text.contains("sku") || headers_text.contains("inventory") {
+        } else if headers_text.contains("product")
+            || headers_text.contains("item")
+            || headers_text.contains("sku")
+            || headers_text.contains("inventory")
+        {
             "product".to_string()
-        } else if headers_text.contains("mean") || headers_text.contains("std") ||
-                  headers_text.contains("avg") || headers_text.contains("median") {
+        } else if headers_text.contains("mean")
+            || headers_text.contains("std")
+            || headers_text.contains("avg")
+            || headers_text.contains("median")
+        {
             "statistical".to_string()
         } else {
             "generic".to_string()
         }
     }
-    
+
     fn detect_div_tables(&self, tables: &mut Vec<TableElement>) {
         // Detect common div-based table patterns
-        let patterns = vec![
-            ".table-row",
-            "[role='table']",
-            ".data-table",
-            ".grid-table",
-        ];
-        
+        let patterns = vec![".table-row", "[role='table']", ".data-table", ".grid-table"];
+
         for pattern in patterns {
             if let Ok(selector) = Selector::parse(pattern) {
                 if self.document.select(&selector).next().is_some() {
@@ -252,20 +254,18 @@ impl UniversalDetector {
             }
         }
     }
-    
+
     pub fn detect_forms(&self) -> Vec<FormElement> {
         let mut forms = Vec::new();
-        
+
         if let Ok(selector) = Selector::parse("form") {
             for (idx, form) in self.document.select(&selector).enumerate() {
                 let action = form.value().attr("action").map(|s| s.to_string());
-                let method = form.value().attr("method")
-                    .unwrap_or("get")
-                    .to_string();
-                
+                let method = form.value().attr("method").unwrap_or("get").to_string();
+
                 let fields = self.extract_form_fields(&form);
                 let has_file = fields.iter().any(|f| f.field_type == "file");
-                
+
                 forms.push(FormElement {
                     selector: format!("form:nth-of-type({})", idx + 1),
                     action,
@@ -275,34 +275,30 @@ impl UniversalDetector {
                 });
             }
         }
-        
+
         forms
     }
-    
+
     fn extract_form_fields(&self, form: &ElementRef) -> Vec<FormField> {
         let mut fields = Vec::new();
-        
+
         // Extract input fields
         if let Ok(selector) = Selector::parse("input, select, textarea") {
             for field in form.select(&selector) {
-                let name = field.value().attr("name")
-                    .unwrap_or("")
-                    .to_string();
-                
+                let name = field.value().attr("name").unwrap_or("").to_string();
+
                 let field_type = if field.value().name() == "select" {
                     "select".to_string()
                 } else if field.value().name() == "textarea" {
                     "textarea".to_string()
                 } else {
-                    field.value().attr("type")
-                        .unwrap_or("text")
-                        .to_string()
+                    field.value().attr("type").unwrap_or("text").to_string()
                 };
-                
+
                 let label = self.find_label_for_field(&field);
                 let required = field.value().attr("required").is_some();
                 let options = self.extract_field_options(&field);
-                
+
                 if !name.is_empty() {
                     fields.push(FormField {
                         name,
@@ -314,30 +310,32 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         fields
     }
-    
+
     fn find_label_for_field(&self, field: &ElementRef) -> Option<String> {
         // Try to find associated label
         if let Some(id) = field.value().attr("id") {
-            let label_selector = format!("label[for='{}']", id);
+            let label_selector = format!("label[for='{id}']");
             if let Ok(selector) = Selector::parse(&label_selector) {
                 if let Some(label) = self.document.select(&selector).next() {
                     return Some(label.text().collect::<String>().trim().to_string());
                 }
             };
         }
-        
+
         // Try aria-label
-        field.value().attr("aria-label")
+        field
+            .value()
+            .attr("aria-label")
             .or_else(|| field.value().attr("placeholder"))
             .map(|s| s.to_string())
     }
-    
+
     fn extract_field_options(&self, field: &ElementRef) -> Vec<String> {
         let mut options = Vec::new();
-        
+
         if field.value().name() == "select" {
             if let Ok(selector) = Selector::parse("option") {
                 for option in field.select(&selector) {
@@ -348,13 +346,13 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         options
     }
-    
+
     pub fn detect_dropdowns(&self) -> Vec<DropdownElement> {
         let mut dropdowns = Vec::new();
-        
+
         // Standard select elements
         if let Ok(selector) = Selector::parse("select") {
             for (idx, select) in self.document.select(&selector).enumerate() {
@@ -362,7 +360,7 @@ impl UniversalDetector {
                 let label = self.find_label_for_field(&select);
                 let options = self.extract_field_options(&select);
                 let option_count = options.len();
-                
+
                 dropdowns.push(DropdownElement {
                     selector: format!("select:nth-of-type({})", idx + 1),
                     name,
@@ -372,7 +370,7 @@ impl UniversalDetector {
                 });
             }
         }
-        
+
         // Custom dropdowns
         let custom_patterns = vec![
             "[role='combobox']",
@@ -381,7 +379,7 @@ impl UniversalDetector {
             ".select-wrapper",
             "[data-toggle='dropdown']",
         ];
-        
+
         for pattern in custom_patterns {
             if let Ok(selector) = Selector::parse(pattern) {
                 for element in self.document.select(&selector) {
@@ -396,10 +394,10 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         dropdowns
     }
-    
+
     pub fn detect_pagination(&self) -> Option<PaginationElement> {
         // Check for numbered pagination
         let page_patterns = vec![
@@ -409,7 +407,7 @@ impl UniversalDetector {
             ".page-numbers",
             ".paginate",
         ];
-        
+
         for pattern in page_patterns {
             if let Ok(selector) = Selector::parse(pattern) {
                 if let Some(element) = self.document.select(&selector).next() {
@@ -417,7 +415,7 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Check for infinite scroll indicators
         if self.detect_infinite_scroll() {
             return Some(PaginationElement {
@@ -429,10 +427,10 @@ impl UniversalDetector {
                 pagination_type: "infinite_scroll".to_string(),
             });
         }
-        
+
         None
     }
-    
+
     fn analyze_pagination(&self, element: &ElementRef) -> PaginationElement {
         let mut pagination = PaginationElement {
             next_selector: None,
@@ -442,20 +440,20 @@ impl UniversalDetector {
             current_page: None,
             pagination_type: "numbered".to_string(),
         };
-        
+
         // Find next/prev links
         if let Ok(selector) = Selector::parse("a[rel='next'], .next, a:contains('Next')") {
             if element.select(&selector).next().is_some() {
                 pagination.next_selector = Some("a[rel='next'], .next".to_string());
             }
         }
-        
+
         if let Ok(selector) = Selector::parse("a[rel='prev'], .prev, a:contains('Previous')") {
             if element.select(&selector).next().is_some() {
                 pagination.prev_selector = Some("a[rel='prev'], .prev".to_string());
             }
         }
-        
+
         // Extract page numbers
         if let Ok(selector) = Selector::parse("a") {
             for link in element.select(&selector) {
@@ -465,17 +463,18 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         if !pagination.page_numbers.is_empty() {
-            pagination.total_pages = pagination.page_numbers
+            pagination.total_pages = pagination
+                .page_numbers
                 .iter()
                 .filter_map(|s| s.parse::<usize>().ok())
                 .max();
         }
-        
+
         pagination
     }
-    
+
     fn detect_infinite_scroll(&self) -> bool {
         // Check for common infinite scroll indicators
         let indicators = vec![
@@ -484,7 +483,7 @@ impl UniversalDetector {
             ".load-more",
             "[data-load-more]",
         ];
-        
+
         for indicator in indicators {
             if let Ok(selector) = Selector::parse(indicator) {
                 if self.document.select(&selector).next().is_some() {
@@ -492,32 +491,28 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         false
     }
-    
+
     pub fn detect_downloads(&self) -> Vec<DownloadLink> {
         let mut downloads = Vec::new();
         let download_extensions = vec![
-            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-            "zip", "rar", "7z", "tar", "gz",
-            "csv", "txt", "rtf",
-            "mp3", "mp4", "avi", "mov",
-            "jpg", "jpeg", "png", "gif", "svg",
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip", "rar", "7z", "tar", "gz",
+            "csv", "txt", "rtf", "mp3", "mp4", "avi", "mov", "jpg", "jpeg", "png", "gif", "svg",
         ];
-        
+
         if let Ok(selector) = Selector::parse("a[href]") {
             for link in self.document.select(&selector) {
                 if let Some(href) = link.value().attr("href") {
                     let lower_href = href.to_lowercase();
-                    
+
                     // Check if link points to downloadable file
                     for ext in &download_extensions {
-                        if lower_href.ends_with(&format!(".{}", ext)) {
+                        if lower_href.ends_with(&format!(".{ext}")) {
                             let text = link.text().collect::<String>().trim().to_string();
-                            let file_size = link.value().attr("data-size")
-                                .map(|s| s.to_string());
-                            
+                            let file_size = link.value().attr("data-size").map(|s| s.to_string());
+
                             downloads.push(DownloadLink {
                                 url: self.resolve_url(href),
                                 text,
@@ -530,10 +525,10 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         downloads
     }
-    
+
     pub fn detect_contacts(&self) -> ContactInfo {
         let mut contacts = ContactInfo {
             emails: Vec::new(),
@@ -541,9 +536,9 @@ impl UniversalDetector {
             addresses: Vec::new(),
             social_links: Vec::new(),
         };
-        
+
         let text = self.document.root_element().text().collect::<String>();
-        
+
         // Extract emails
         let email_regex = Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").unwrap();
         for cap in email_regex.captures_iter(&text) {
@@ -551,9 +546,12 @@ impl UniversalDetector {
                 contacts.emails.push(email.as_str().to_string());
             }
         }
-        
+
         // Extract phone numbers
-        let phone_regex = Regex::new(r"[\+]?[(]?[0-9]{1,4}[)]?[-.\s]?[(]?[0-9]{1,4}[)]?[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}").unwrap();
+        let phone_regex = Regex::new(
+            r"[\+]?[(]?[0-9]{1,4}[)]?[-.\s]?[(]?[0-9]{1,4}[)]?[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}",
+        )
+        .unwrap();
         for cap in phone_regex.captures_iter(&text) {
             if let Some(phone) = cap.get(0) {
                 let phone_str = phone.as_str();
@@ -562,19 +560,19 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Extract social links
         self.extract_social_links(&mut contacts.social_links);
-        
+
         // Remove duplicates
         contacts.emails.sort();
         contacts.emails.dedup();
         contacts.phones.sort();
         contacts.phones.dedup();
-        
+
         contacts
     }
-    
+
     fn extract_social_links(&self, social_links: &mut Vec<SocialLink>) {
         let social_patterns = vec![
             ("facebook", "facebook.com"),
@@ -584,7 +582,7 @@ impl UniversalDetector {
             ("youtube", "youtube.com"),
             ("github", "github.com"),
         ];
-        
+
         if let Ok(selector) = Selector::parse("a[href]") {
             for link in self.document.select(&selector) {
                 if let Some(href) = link.value().attr("href") {
@@ -601,10 +599,10 @@ impl UniversalDetector {
             }
         }
     }
-    
+
     pub fn detect_interactive(&self) -> Vec<InteractiveElement> {
         let mut elements = Vec::new();
-        
+
         // Detect buttons
         if let Ok(selector) = Selector::parse("button, [role='button'], .btn, .button") {
             for button in self.document.select(&selector) {
@@ -619,14 +617,14 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Detect accordions/collapsibles
         let accordion_patterns = vec![
             "[data-toggle='collapse']",
             ".accordion-header",
             ".collapsible",
         ];
-        
+
         for pattern in accordion_patterns {
             if let Ok(selector) = Selector::parse(pattern) {
                 for element in self.document.select(&selector) {
@@ -640,7 +638,7 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Detect tabs
         if let Ok(selector) = Selector::parse("[role='tab'], .tab, .nav-tab") {
             for tab in self.document.select(&selector) {
@@ -653,17 +651,17 @@ impl UniversalDetector {
                 });
             }
         }
-        
+
         elements
     }
-    
+
     pub fn detect_media(&self) -> MediaElements {
         let mut media = MediaElements {
             images: Vec::new(),
             videos: Vec::new(),
             audio: Vec::new(),
         };
-        
+
         // Detect images
         if let Ok(selector) = Selector::parse("img") {
             for img in self.document.select(&selector) {
@@ -677,15 +675,18 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Detect videos
-        if let Ok(selector) = Selector::parse("video, iframe[src*='youtube'], iframe[src*='vimeo']") {
+        if let Ok(selector) = Selector::parse("video, iframe[src*='youtube'], iframe[src*='vimeo']")
+        {
             for video in self.document.select(&selector) {
-                let src = video.value().attr("src")
+                let src = video
+                    .value()
+                    .attr("src")
                     .or_else(|| video.value().attr("data-src"))
                     .unwrap_or("")
                     .to_string();
-                
+
                 media.videos.push(VideoElement {
                     src: self.resolve_url(&src),
                     poster: video.value().attr("poster").map(|s| s.to_string()),
@@ -693,7 +694,7 @@ impl UniversalDetector {
                 });
             }
         }
-        
+
         // Detect audio
         if let Ok(selector) = Selector::parse("audio") {
             for audio in self.document.select(&selector) {
@@ -705,23 +706,24 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         media
     }
-    
+
     pub fn detect_structured_data(&self) -> Vec<StructuredData> {
         let mut structured = Vec::new();
-        
+
         // Detect JSON-LD
         if let Ok(selector) = Selector::parse("script[type='application/ld+json']") {
             for script in self.document.select(&selector) {
                 let content = script.text().collect::<String>();
                 if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                    let schema_type = json.get("@type")
+                    let schema_type = json
+                        .get("@type")
                         .and_then(|v| v.as_str())
                         .unwrap_or("Unknown")
                         .to_string();
-                    
+
                     structured.push(StructuredData {
                         data_type: "json-ld".to_string(),
                         schema_type,
@@ -730,7 +732,7 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         // Detect Microdata
         if let Ok(selector) = Selector::parse("[itemscope]") {
             for element in self.document.select(&selector) {
@@ -745,10 +747,10 @@ impl UniversalDetector {
                 }
             }
         }
-        
+
         structured
     }
-    
+
     fn resolve_url(&self, url: &str) -> String {
         if url.starts_with("http://") || url.starts_with("https://") {
             url.to_string()
@@ -760,98 +762,131 @@ impl UniversalDetector {
             url.to_string()
         }
     }
-    
+
     pub fn generate_extraction_report(&self) -> String {
         let detected = self.detect_all();
         let mut report = String::new();
-        
+
         report.push_str("=== AUTOMATIC DETECTION REPORT ===\n\n");
-        
+
         // Tables
         if !detected.tables.is_empty() {
             report.push_str(&format!("📊 Tables Found: {}\n", detected.tables.len()));
             for table in &detected.tables {
-                report.push_str(&format!("  - {} ({} rows, type: {})\n", 
-                    table.selector, table.row_count, table.likely_data_type));
+                report.push_str(&format!(
+                    "  - {} ({} rows, type: {})\n",
+                    table.selector, table.row_count, table.likely_data_type
+                ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Forms
         if !detected.forms.is_empty() {
             report.push_str(&format!("📝 Forms Found: {}\n", detected.forms.len()));
             for form in &detected.forms {
-                report.push_str(&format!("  - {} ({} fields)\n", 
-                    form.selector, form.fields.len()));
+                report.push_str(&format!(
+                    "  - {} ({} fields)\n",
+                    form.selector,
+                    form.fields.len()
+                ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Dropdowns
         if !detected.dropdowns.is_empty() {
-            report.push_str(&format!("📋 Dropdowns Found: {}\n", detected.dropdowns.len()));
+            report.push_str(&format!(
+                "📋 Dropdowns Found: {}\n",
+                detected.dropdowns.len()
+            ));
             for dropdown in &detected.dropdowns {
-                report.push_str(&format!("  - {} ({} options)\n", 
-                    dropdown.selector, dropdown.option_count));
+                report.push_str(&format!(
+                    "  - {} ({} options)\n",
+                    dropdown.selector, dropdown.option_count
+                ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Pagination
         if let Some(pagination) = &detected.pagination {
             report.push_str(&format!("📄 Pagination: {}\n", pagination.pagination_type));
             if let Some(total) = pagination.total_pages {
-                report.push_str(&format!("  Total pages: {}\n", total));
+                report.push_str(&format!("  Total pages: {total}\n"));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Downloads
         if !detected.downloads.is_empty() {
-            report.push_str(&format!("💾 Downloadable Files: {}\n", detected.downloads.len()));
+            report.push_str(&format!(
+                "💾 Downloadable Files: {}\n",
+                detected.downloads.len()
+            ));
             for download in &detected.downloads {
                 report.push_str(&format!("  - {} ({})\n", download.text, download.file_type));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Contact Info
         if !detected.contacts.emails.is_empty() || !detected.contacts.phones.is_empty() {
             report.push_str("📧 Contact Information:\n");
             if !detected.contacts.emails.is_empty() {
-                report.push_str(&format!("  Emails: {}\n", detected.contacts.emails.join(", ")));
+                report.push_str(&format!(
+                    "  Emails: {}\n",
+                    detected.contacts.emails.join(", ")
+                ));
             }
             if !detected.contacts.phones.is_empty() {
-                report.push_str(&format!("  Phones: {}\n", detected.contacts.phones.join(", ")));
+                report.push_str(&format!(
+                    "  Phones: {}\n",
+                    detected.contacts.phones.join(", ")
+                ));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Interactive Elements
         if !detected.interactive.is_empty() {
-            report.push_str(&format!("🎯 Interactive Elements: {}\n", detected.interactive.len()));
-            let buttons = detected.interactive.iter().filter(|e| e.element_type == "button").count();
-            let accordions = detected.interactive.iter().filter(|e| e.element_type == "accordion").count();
-            let tabs = detected.interactive.iter().filter(|e| e.element_type == "tab").count();
-            
+            report.push_str(&format!(
+                "🎯 Interactive Elements: {}\n",
+                detected.interactive.len()
+            ));
+            let buttons = detected
+                .interactive
+                .iter()
+                .filter(|e| e.element_type == "button")
+                .count();
+            let accordions = detected
+                .interactive
+                .iter()
+                .filter(|e| e.element_type == "accordion")
+                .count();
+            let tabs = detected
+                .interactive
+                .iter()
+                .filter(|e| e.element_type == "tab")
+                .count();
+
             if buttons > 0 {
-                report.push_str(&format!("  Buttons: {}\n", buttons));
+                report.push_str(&format!("  Buttons: {buttons}\n"));
             }
             if accordions > 0 {
-                report.push_str(&format!("  Accordions: {}\n", accordions));
+                report.push_str(&format!("  Accordions: {accordions}\n"));
             }
             if tabs > 0 {
-                report.push_str(&format!("  Tabs: {}\n", tabs));
+                report.push_str(&format!("  Tabs: {tabs}\n"));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Media
-        let total_media = detected.media.images.len() + 
-                         detected.media.videos.len() + 
-                         detected.media.audio.len();
+        let total_media =
+            detected.media.images.len() + detected.media.videos.len() + detected.media.audio.len();
         if total_media > 0 {
-            report.push_str(&format!("🖼️ Media Elements: {}\n", total_media));
+            report.push_str(&format!("🖼️ Media Elements: {total_media}\n"));
             if !detected.media.images.is_empty() {
                 report.push_str(&format!("  Images: {}\n", detected.media.images.len()));
             }
@@ -861,17 +896,20 @@ impl UniversalDetector {
             if !detected.media.audio.is_empty() {
                 report.push_str(&format!("  Audio: {}\n", detected.media.audio.len()));
             }
-            report.push_str("\n");
+            report.push('\n');
         }
-        
+
         // Structured Data
         if !detected.structured_data.is_empty() {
-            report.push_str(&format!("📋 Structured Data: {}\n", detected.structured_data.len()));
+            report.push_str(&format!(
+                "📋 Structured Data: {}\n",
+                detected.structured_data.len()
+            ));
             for data in &detected.structured_data {
                 report.push_str(&format!("  - {} ({})\n", data.data_type, data.schema_type));
             }
         }
-        
+
         report
     }
 }

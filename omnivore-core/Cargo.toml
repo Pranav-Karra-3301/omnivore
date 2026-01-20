@@ -44,7 +44,7 @@ thiserror = "2.0"
 
 # Logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "time", "fmt", "ansi"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter", "time", "fmt", "ansi"] }
 
 # Database and storage
 rocksdb = "0.22"

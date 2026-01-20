@@ -1,26 +1,26 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::env;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct OmnivoreConfig {
     #[serde(default)]
     pub ai: AiConfig,
-    
+
     #[serde(default)]
     pub extraction: ExtractionConfig,
-    
+
     #[serde(default)]
     pub browser: BrowserConfig,
-    
+
     #[serde(default)]
     pub output: OutputConfig,
-    
+
     #[serde(default)]
     pub templates: TemplateConfig,
-    
+
     #[serde(default)]
     pub advanced: AdvancedConfig,
 }
@@ -98,19 +98,6 @@ pub struct AdvancedConfig {
     pub rate_limit_ms: u64,
     pub retry_attempts: u32,
     pub deduplication: bool,
-}
-
-impl Default for OmnivoreConfig {
-    fn default() -> Self {
-        Self {
-            ai: AiConfig::default(),
-            extraction: ExtractionConfig::default(),
-            browser: BrowserConfig::default(),
-            output: OutputConfig::default(),
-            templates: TemplateConfig::default(),
-            advanced: AdvancedConfig::default(),
-        }
-    }
 }
 
 impl Default for AiConfig {
@@ -198,93 +185,87 @@ impl Default for AdvancedConfig {
 impl OmnivoreConfig {
     pub fn load() -> Result<Self> {
         let config_path = Self::config_path()?;
-        
+
         if !config_path.exists() {
             // Return default config if file doesn't exist
             return Ok(Self::default());
         }
-        
-        let content = fs::read_to_string(&config_path)
-            .context("Failed to read config file")?;
-        
-        let config: Self = toml::from_str(&content)
-            .context("Failed to parse config file")?;
-        
+
+        let content = fs::read_to_string(&config_path).context("Failed to read config file")?;
+
+        let config: Self = toml::from_str(&content).context("Failed to parse config file")?;
+
         Ok(config)
     }
-    
+
     pub fn save(&self) -> Result<()> {
         let config_path = Self::config_path()?;
-        
+
         // Create config directory if it doesn't exist
         if let Some(parent) = config_path.parent() {
-            fs::create_dir_all(parent)
-                .context("Failed to create config directory")?;
+            fs::create_dir_all(parent).context("Failed to create config directory")?;
         }
-        
-        let content = toml::to_string_pretty(self)
-            .context("Failed to serialize config")?;
-        
-        fs::write(&config_path, content)
-            .context("Failed to write config file")?;
-        
+
+        let content = toml::to_string_pretty(self).context("Failed to serialize config")?;
+
+        fs::write(&config_path, content).context("Failed to write config file")?;
+
         Ok(())
     }
-    
+
     pub fn config_path() -> Result<PathBuf> {
         // Check for OMNIVORE_CONFIG env var first
         if let Ok(path) = env::var("OMNIVORE_CONFIG") {
             return Ok(PathBuf::from(path));
         }
-        
+
         // Default to ~/.omnivore/config.toml
-        let home = dirs::home_dir()
-            .context("Failed to get home directory")?;
-        
+        let home = dirs::home_dir().context("Failed to get home directory")?;
+
         Ok(home.join(".omnivore").join("config.toml"))
     }
-    
+
     pub fn merge_with_env(&mut self) {
         // Override with environment variables if present
         if let Ok(key) = env::var("OMNIVORE_OPENAI_API_KEY") {
             self.ai.openai_api_key = Some(key);
         }
-        
+
         if let Ok(model) = env::var("OMNIVORE_AI_MODEL") {
             self.ai.model = model;
         }
-        
+
         if let Ok(webhook) = env::var("OMNIVORE_WEBHOOK_URL") {
             self.output.webhook_url = Some(webhook);
         }
-        
+
         if let Ok(ua) = env::var("OMNIVORE_USER_AGENT") {
             self.advanced.user_agent = ua;
         }
     }
-    
+
     pub fn validate(&self) -> Result<()> {
         // Validate configuration
         if self.ai.enable_natural_language && self.ai.openai_api_key.is_none() {
             anyhow::bail!("OpenAI API key is required when natural language mode is enabled");
         }
-        
+
         if self.advanced.max_workers == 0 {
             anyhow::bail!("max_workers must be greater than 0");
         }
-        
+
         if self.advanced.max_depth == 0 {
             anyhow::bail!("max_depth must be greater than 0");
         }
-        
+
         Ok(())
     }
-    
+
     pub fn is_configured(&self) -> bool {
         // Check if basic configuration is complete
         self.ai.openai_api_key.is_some() || !self.ai.enable_natural_language
     }
-    
+
     pub fn get_api_key(&self) -> Option<&str> {
         self.ai.openai_api_key.as_deref()
     }
@@ -314,59 +295,59 @@ pub struct PatternRule {
 impl ExtractionTemplate {
     pub fn load(name: &str) -> Result<Self> {
         let config = OmnivoreConfig::load()?;
-        let template_path = config.templates.templates_dir.join(format!("{}.yaml", name));
-        
+        let template_path = config.templates.templates_dir.join(format!("{name}.yaml"));
+
         if !template_path.exists() {
             anyhow::bail!("Template '{}' not found", name);
         }
-        
-        let content = fs::read_to_string(&template_path)
-            .context("Failed to read template file")?;
-        
-        let template: Self = serde_yaml::from_str(&content)
-            .context("Failed to parse template file")?;
-        
+
+        let content = fs::read_to_string(&template_path).context("Failed to read template file")?;
+
+        let template: Self =
+            serde_yaml::from_str(&content).context("Failed to parse template file")?;
+
         Ok(template)
     }
-    
+
     pub fn save(&self) -> Result<()> {
         let config = OmnivoreConfig::load()?;
-        let template_path = config.templates.templates_dir.join(format!("{}.yaml", self.name));
-        
+        let template_path = config
+            .templates
+            .templates_dir
+            .join(format!("{}.yaml", self.name));
+
         // Create templates directory if it doesn't exist
         fs::create_dir_all(&config.templates.templates_dir)
             .context("Failed to create templates directory")?;
-        
-        let content = serde_yaml::to_string(self)
-            .context("Failed to serialize template")?;
-        
-        fs::write(&template_path, content)
-            .context("Failed to write template file")?;
-        
+
+        let content = serde_yaml::to_string(self).context("Failed to serialize template")?;
+
+        fs::write(&template_path, content).context("Failed to write template file")?;
+
         Ok(())
     }
-    
+
     pub fn list_templates() -> Result<Vec<String>> {
         let config = OmnivoreConfig::load()?;
         let templates_dir = &config.templates.templates_dir;
-        
+
         if !templates_dir.exists() {
             return Ok(Vec::new());
         }
-        
+
         let mut templates = Vec::new();
-        
+
         for entry in fs::read_dir(templates_dir)? {
             let entry = entry?;
             let path = entry.path();
-            
+
             if path.extension().and_then(|s| s.to_str()) == Some("yaml") {
                 if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
                     templates.push(stem.to_string());
                 }
             }
         }
-        
+
         Ok(templates)
     }
 }

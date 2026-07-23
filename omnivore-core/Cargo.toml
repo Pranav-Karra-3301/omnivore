@@ -2,7 +2,7 @@
 name = "omnivore-core"
 version = "0.1.1"
 edition = "2021"
-authors = ["Pranav Karra <pranav.karra@example.com>"]
+authors = ["Pranav Karra"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Pranav-Karra-3301/omnivore"
 homepage = "https://ov.pranavkarra.me"

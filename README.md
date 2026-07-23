@@ -15,6 +15,8 @@
 
 A high-performance, parallel web crawler and knowledge graph system built in Rust, designed for scale and intelligence.
 
+[Website](https://ov.pranavkarra.me) · [crates.io](https://crates.io/crates/omnivore-cli) · [Installation](INSTALLATION.md)
+
 ## Features
 
 ### 🤖 AI-Powered Intelligence
@@ -58,6 +60,11 @@ omnivore setup
 ```
 
 ### Installation
+
+#### Cargo (crates.io)
+```bash
+cargo install omnivore-cli
+```
 
 #### Quick Install (Linux/macOS)
 ```bash
@@ -407,3 +414,5 @@ Built with these amazing Rust crates:
 ---
 
 **Note**: This is a production-grade foundation that can be extended with additional features as needed.
+
+Built by [Pranav Karra](https://pranavkarra.me)

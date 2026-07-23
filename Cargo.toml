@@ -8,11 +8,11 @@ members = [
 [workspace.package]
 version = "0.1.1"
 edition = "2021"
-authors = ["Omnivore Team"]
+authors = ["Pranav Karra"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Pranav-Karra-3301/omnivore"
-homepage = "https://github.com/Pranav-Karra-3301/omnivore"
-documentation = "https://docs.rs/omnivore"
+homepage = "https://ov.pranavkarra.me"
+documentation = "https://docs.rs/omnivore-cli"
 keywords = ["crawler", "web-scraping", "knowledge-graph", "async", "parallel"]
 categories = ["web-programming", "network-programming", "data-structures"]
 
